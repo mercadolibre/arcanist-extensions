@@ -11,6 +11,7 @@ phutil_register_library_map(array(
   'class' =>
   array(
     'ArcanistCheckstyleLinter' => 'lint/linter/JavaCheckstyleLinter.php',
+    'ArcanistESLintLinter' => 'lint/linter/ESLintLinter.php',
   ),
   'function' =>
   array(
@@ -18,5 +19,6 @@ phutil_register_library_map(array(
   'xmap' =>
   array(
     'ArcanistCheckstyleLinter' => 'ArcanistExternalLinter',
+    'ArcanistESLintLinter' => 'ArcanistExternalLinter',
   ),
 ));
