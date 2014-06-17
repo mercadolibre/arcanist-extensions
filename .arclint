@@ -1,0 +1,10 @@
+{
+    "linters": {
+        "sample": {
+            "type": "eslint"
+        },
+        "php": {
+            "type": "phutil-library"
+        }
+    }
+}
