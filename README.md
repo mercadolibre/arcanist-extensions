@@ -61,6 +61,35 @@ Most linters require a configuration file located at the root of the project.
 You will find the most common configurations for your language or platform
 under `configs/`.
 
+# Custom Linters
+
+## Available Linters
+
+### ESLint
+
+ESLint is a highly customizable, flexible javascript linter. It depends on
+Esprima for AST parsing and nodejs as the runtime.
+
+### Sass (scss-lint)
+
+SCSS Lint is a ruby gem that checks both the style and common mistakes in your
+Sass files. It can also check some Compass extensions too!
+
+### Java (Checkstyle)
+
+Checkstyle is a generic style checker for C-like languages.
+
+### OCLint
+
+[OCLint](oclint.org) is an Objective-C linter and style checker. Though not as
+flexible or easy to use as most linters for other languages, it is the most
+stable option at the time. It can be integrated with XCode and other tools via
+built-in hooks or standard output.
+
+## Documentation on the Linters
+
+You can find more about each linter in the attached README.md files under
+`configs`.
 
 # Building
 
