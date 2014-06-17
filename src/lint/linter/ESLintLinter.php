@@ -66,7 +66,7 @@ final class ArcanistESLintLinter extends ArcanistExternalLinter {
                     $prefix = 'W';
                 }
 
-                $code = 'CS.'.$prefix.'.'.$child->getAttribute('source');
+                $code = 'ESLINT.'.$prefix.'.'.$child->getAttribute('source');
 
                 $message = new ArcanistLintMessage();
                 $message->setPath($path);
@@ -84,7 +84,7 @@ final class ArcanistESLintLinter extends ArcanistExternalLinter {
     }
 
     protected function getDefaultMessageSeverity($code) {
-        if (preg_match('/^CS\\.W\\./', $code)) {
+        if (preg_match('/^ESLINT\\.W\\./', $code)) {
             return ArcanistLintSeverity::SEVERITY_WARNING;
         } else {
             return ArcanistLintSeverity::SEVERITY_ERROR;
