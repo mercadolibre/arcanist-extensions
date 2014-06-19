@@ -12,6 +12,7 @@ phutil_register_library_map(array(
   array(
     'ArcanistCheckstyleLinter' => 'lint/linter/JavaCheckstyleLinter.php',
     'ArcanistESLintLinter' => 'lint/linter/ESLintLinter.php',
+    'ArcanistFindBugsLinter' => 'lint/linter/FindBugsLinter.php',
     'ArcanistOCLintLinter' => 'lint/linter/OCLintLinter.php',
     'ArcanistSassLinter' => 'lint/linter/SassLinter.php',
   ),
@@ -22,6 +23,7 @@ phutil_register_library_map(array(
   array(
     'ArcanistCheckstyleLinter' => 'ArcanistExternalLinter',
     'ArcanistESLintLinter' => 'ArcanistExternalLinter',
+    'ArcanistFindBugsLinter' => 'ArcanistLinter',
     'ArcanistOCLintLinter' => 'ArcanistLinter',
     'ArcanistSassLinter' => 'ArcanistExternalLinter',
   ),
