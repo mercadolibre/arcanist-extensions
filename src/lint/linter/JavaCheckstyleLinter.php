@@ -1,9 +1,10 @@
 <?php
 
-final class ArcanistCheckstyleLinter extends ArcanistExternalLinter {
+final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
 
   private $_srcPaths;
   private $_aggregate = true;
+  private $outputPath = '';
 
 
   public function getLinterName() {
@@ -42,9 +43,11 @@ final class ArcanistCheckstyleLinter extends ArcanistExternalLinter {
 
   public function getMandatoryFlags() {
     $target = $this->_aggregate ? 'checkstyle:checkstyle-aggregate' : 'checkstyle:checkstyle';
+    $temp_file = $this->buildOutputPath();
     return array(
       $target,
-      '-Dcheckstyle.resourceIncludes=""'
+      '-Dcheckstyle.resourceIncludes=""',
+      "-Dcheckstyle.output.file=$temp_file"
     );
   }
 
@@ -93,20 +96,22 @@ final class ArcanistCheckstyleLinter extends ArcanistExternalLinter {
     }
   }
 
-  protected function buildOutputPath($path) {
-    return sys_get_temp_dir() . '/' . str_replace('/', '-', $this->extractRelativeFilePath($path));
+  protected function buildOutputPath() {
+    if (!$this->outputPath) {
+        $this->outputPath = tempnam(sys_get_temp_dir(), 'checkstyle-');
+    }
+    return $this->outputPath;
   }
 
-  protected function getPathArgumentForLinterFuture($path) {
-    $file = $this->extractRelativeFilePath($path);
-    $temp_file = $this->buildOutputPath($path);
-    return csprintf('-Dcheckstyle.includes=%s -Dcheckstyle.output.file=%s', $file, $temp_file);
+  protected function getPathArgumentForLinter($path) {
+      $file = $this->extractRelativeFilePath($path);
+      return csprintf('-Dcheckstyle.includes=%s', $file);
   }
 
-  protected function parseLinterOutput($path, $err, $stdout, $stderr) {
+  protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
 
     $report_dom = new DOMDocument();
-    $tmp_file = $this->buildOutputPath($path);
+    $tmp_file = $this->buildOutputPath();
     $content = file_get_contents($tmp_file);
     unlink($tmp_file);
 

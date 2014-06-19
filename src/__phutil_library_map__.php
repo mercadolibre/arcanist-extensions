@@ -15,16 +15,18 @@ phutil_register_library_map(array(
     'ArcanistFindBugsLinter' => 'lint/linter/FindBugsLinter.php',
     'ArcanistOCLintLinter' => 'lint/linter/OCLintLinter.php',
     'ArcanistSassLinter' => 'lint/linter/SassLinter.php',
+    'ArcanistSingleRunLinter' => 'lint/linter/ArcanistSingleRunLinter.php',
   ),
   'function' =>
   array(
   ),
   'xmap' =>
   array(
-    'ArcanistCheckstyleLinter' => 'ArcanistExternalLinter',
+    'ArcanistCheckstyleLinter' => 'ArcanistSingleRunLinter',
     'ArcanistESLintLinter' => 'ArcanistExternalLinter',
     'ArcanistFindBugsLinter' => 'ArcanistLinter',
     'ArcanistOCLintLinter' => 'ArcanistLinter',
     'ArcanistSassLinter' => 'ArcanistExternalLinter',
+    'ArcanistSingleRunLinter' => 'ArcanistLinter',
   ),
 ));
