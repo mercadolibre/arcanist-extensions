@@ -24,6 +24,7 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
 
     public function getMandatoryFlags() {
         return array(
+            'compile',
             'findbugs:findbugs'
         );
     }
