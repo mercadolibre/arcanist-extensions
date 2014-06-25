@@ -136,6 +136,7 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
         }
 
         $code = 'CS.'.$prefix.'.'.$child->getAttribute('source');
+        $path = $file->getAttribute('name');
 
         $message = new ArcanistLintMessage();
         $message->setPath($path);
