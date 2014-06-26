@@ -39,4 +39,10 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
     }
 
 
+    final public function didRunLinters() {
+        foreach ($this->paths as $path) {
+            $this->willLintPath($path);
+        }
+    }
+
 }
