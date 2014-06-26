@@ -59,7 +59,7 @@ function clone_repo() {
 
 function checkout() {
    cd "$REPO_TARGET_PATH"
-   local tag=$1;
+   local tag="$1";
    case "$tag" in
        "stable")
             tag=$(find_tag "^[^-]+$");
@@ -99,8 +99,8 @@ function install_posix() {
     checkout "$1";
 
     sudo ln -s "$REPO_TARGET_PATH/src" "$TARGET_PATH";
-    sudo ln -s "$REPO_TARGET_PATH/scripts/install.sh" "/usr/bin/arclintstaller";
-    sudo chmod uga+x "/usr/bin/arclint";
+    sudo ln -s "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH";
+    sudo chmod uga+x "$SCRIPT_PATH";
     sudo chown "$USER:$USER" -R "$TARGET_PATH";
 
     echo "Done."
@@ -116,9 +116,9 @@ function update_posix() {
 
 function remove_posix() {
     echo "Removing $1 at $TARGET_PATH";
-    sudo rm -r "$TARGET_PATH";
-    sudo rm -r "$REPO_TARGET_PATH";
-    sudo rm "/usr/bin/arclintstaller";
+    sudo rm -rf "$TARGET_PATH";
+    sudo rm -rf "$REPO_TARGET_PATH";
+    sudo rm -f "$SCRIPT_PATH";
     echo "Done."
 }
 
@@ -134,6 +134,7 @@ function main() {
     DEFAULT_TARGET_PATH="$INSTALL_PATH/$TARGET_NAME";
     TARGET_PATH=${TARGET_PATH:-$DEFAULT_TARGET_PATH};
     REPO_TARGET_PATH="$(dirname "$TARGET_PATH")/.$(basename "$TARGET_PATH")";
+    SCRIPT_PATH="/usr/bin/arclintstaller"
     
     case "$CMD" in
         "install")
