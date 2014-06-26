@@ -93,7 +93,7 @@ function install_posix() {
     fi
 
     sudo mkdir -p "$REPO_TARGET_PATH"
-    sudo chown "$USER:$USER" -R "$REPO_TARGET_PATH"
+    sudo chown -R "$USER" "$REPO_TARGET_PATH"
     
     clone_repo;
     checkout "$1";
@@ -101,7 +101,7 @@ function install_posix() {
     sudo ln -s "$REPO_TARGET_PATH/src" "$TARGET_PATH";
     sudo ln -s "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH";
     sudo chmod uga+x "$SCRIPT_PATH";
-    sudo chown "$USER:$USER" -R "$TARGET_PATH";
+    sudo chown -R "$USER" "$TARGET_PATH";
 
     echo "Done."
 }
