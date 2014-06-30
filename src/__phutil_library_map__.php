@@ -10,6 +10,7 @@ phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' =>
   array(
+    'ArcanistAndroidLinter' => 'lint/linter/ArcanistAndroidLinter.php',
     'ArcanistCheckstyleLinter' => 'lint/linter/JavaCheckstyleLinter.php',
     'ArcanistESLintLinter' => 'lint/linter/ESLintLinter.php',
     'ArcanistFindBugsLinter' => 'lint/linter/FindBugsLinter.php',
@@ -22,6 +23,7 @@ phutil_register_library_map(array(
   ),
   'xmap' =>
   array(
+    'ArcanistAndroidLinter' => 'ArcanistLinter',
     'ArcanistCheckstyleLinter' => 'ArcanistSingleRunLinter',
     'ArcanistESLintLinter' => 'ArcanistExternalLinter',
     'ArcanistFindBugsLinter' => 'ArcanistLinter',

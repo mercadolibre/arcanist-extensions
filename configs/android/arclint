@@ -1,0 +1,14 @@
+{
+    "linters": {
+        "checkstyle": {
+            "type": "checkstyle",
+            "include": "(\\.java$)",
+            "paths": [ "src" ],
+            "aggregate": false
+        },
+        "android": {
+            "type": "AndroidLint",
+            "include": "(\\.(java|xml)$)"
+        }
+    }
+}
