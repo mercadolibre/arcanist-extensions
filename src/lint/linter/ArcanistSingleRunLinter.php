@@ -16,15 +16,7 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
         }
     }
 
-    protected function getPathArguments($paths) {
-        $args = array();
-        foreach($paths as $path) {
-            $args[] = $this->getPathArgumentForLinter($path);
-        }
-        return implode(' ', $args);
-    }
-
-    abstract protected function getPathArgumentForLinter($path);
+    abstract protected function getPathsArgumentForLinter($path);
     abstract protected function getDefaultBinary();
     abstract protected function getMandatoryFlags();
     abstract protected function getDefaultFlags();
@@ -34,7 +26,7 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
         $binary = $this->getDefaultBinary();
         $args = implode(' ', $this->getMandatoryFlags());
         $args = $args . implode(' ', $this->getDefaultFlags());
-        $paths = $this->getPathArguments($paths);
+        $paths = $this->getPathsArgumentForLinter($paths);
         return "$binary $args $paths";
     }
 

@@ -103,9 +103,13 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
     return $this->outputPath;
   }
 
-  protected function getPathArgumentForLinter($path) {
-      $file = $this->extractRelativeFilePath($path);
-      return csprintf('-Dcheckstyle.includes=%s', $file);
+  protected function getPathsArgumentForLinter($paths) {
+      $absolutePaths = array();
+      foreach ($paths as $path) {
+          $absolutePaths[] = $this->extractRelativeFilePath($path);
+      }
+      $path = implode(',', $absolutePaths);
+      return sprintf('-Dcheckstyle.includes="%s"', $path);
   }
 
   protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
