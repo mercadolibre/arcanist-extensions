@@ -1,0 +1,7 @@
+{
+    "linters": {
+        "php": {
+            "type": "phutil-library"
+        }
+    }
+}

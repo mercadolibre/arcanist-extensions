@@ -1,0 +1,13 @@
+{
+    "env": {
+        "browser": true,
+        "node": true
+    },
+    "rules": {
+        "eqeqeq": 1,
+        "curly": 2,
+        "brace-style": [2, "stroustrup"],
+        "quotes": [2, "single"],
+        "strict": 2
+    }
+}

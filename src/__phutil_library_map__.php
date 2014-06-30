@@ -10,13 +10,25 @@ phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' =>
   array(
+    'ArcanistAndroidLinter' => 'lint/linter/ArcanistAndroidLinter.php',
     'ArcanistCheckstyleLinter' => 'lint/linter/JavaCheckstyleLinter.php',
+    'ArcanistESLintLinter' => 'lint/linter/ESLintLinter.php',
+    'ArcanistFindBugsLinter' => 'lint/linter/FindBugsLinter.php',
+    'ArcanistOCLintLinter' => 'lint/linter/OCLintLinter.php',
+    'ArcanistSassLinter' => 'lint/linter/SassLinter.php',
+    'ArcanistSingleRunLinter' => 'lint/linter/ArcanistSingleRunLinter.php',
   ),
   'function' =>
   array(
   ),
   'xmap' =>
   array(
-    'ArcanistCheckstyleLinter' => 'ArcanistExternalLinter',
+    'ArcanistAndroidLinter' => 'ArcanistLinter',
+    'ArcanistCheckstyleLinter' => 'ArcanistSingleRunLinter',
+    'ArcanistESLintLinter' => 'ArcanistExternalLinter',
+    'ArcanistFindBugsLinter' => 'ArcanistLinter',
+    'ArcanistOCLintLinter' => 'ArcanistLinter',
+    'ArcanistSassLinter' => 'ArcanistExternalLinter',
+    'ArcanistSingleRunLinter' => 'ArcanistLinter',
   ),
 ));
