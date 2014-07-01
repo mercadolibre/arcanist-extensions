@@ -50,6 +50,10 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
        foreach ($matches as $match) {
            $files[] = $match[0];
        }
+       if (!count($files)) {
+            throw new ArcanistUsageException('Could not find any findBug output files. '
+                . 'Check this project is correctly configured and actually a Java project.');
+       }
        return $files;
     }
 
@@ -57,9 +61,16 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
         $report_dom = new DOMDocument();
         $content = file_get_contents($report);
 
+        if (!$content) {
+            throw new ArcanistUsageException('The linter failed to produce a '
+                . 'meaningful output. This might be due to reading an empty '
+                . 'file. Try running `mvn clean` and then this linter again.');
+        }
+
         $ok = $report_dom->loadXML($content);
         if (!$ok) {
-            return false;
+            throw new ArcanistUsageException('Arcanist failed to understand the '
+                . 'linter output. Aborting.');
         }
 
         $bugs = $report_dom->getElementsByTagName('BugInstance');

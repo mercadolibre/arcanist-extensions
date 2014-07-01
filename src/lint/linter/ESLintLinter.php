@@ -47,9 +47,17 @@ final class ArcanistESLintLinter extends ArcanistExternalLinter {
         $messages = array();
         $report_dom = new DOMDocument();
 
+        if (!$stdout) {
+            throw new ArcanistUsageException('The linter failed to produce '
+                . 'a meaningful response. Paste the following in your bug '
+                . "report, please.\n"
+                . $stderr);
+        }
+
         $ok = $report_dom->loadXML($stdout);
         if (!$ok) {
-            return false;
+            throw new ArcanistUsageException('Arcanist failed to parse the '
+                . 'linter output. Aborting.');
         }
 
         $files = $report_dom->getElementsByTagName('file');

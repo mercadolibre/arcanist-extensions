@@ -137,12 +137,18 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
         $lint_bin = $this->getLintPath();
         $lint_lib_path = dirname($lint_bin) . '/lib';
         
-        $_java_options = getenv("_JAVA_OPTIONS");
+        $_java_options = getenv('_JAVA_OPTIONS');
         putenv('_JAVA_OPTIONS=-Djava.awt.headless=true');
 
         $arc_lint_location = $this->runLint($path);
+        $contents = file_get_contents($arc_lint_location);
 
-        $filexml = simplexml_load_string(file_get_contents($arc_lint_location));
+        if (!$contents) {
+            throw new ArcanistUsageException('The linter returned an empty '
+                . 'response. This usually means something went wrong. Aborting.');
+        }
+
+        $filexml = simplexml_load_string($contents);
 
         if ($filexml->attributes()->format < 4) {
             throw new ArcanistUsageException("Unsupported Android lint output "

@@ -120,16 +120,15 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
     unlink($tmp_file);
 
     if (!$content) {
-        $message = new ArcanistLintMessage();
-        $message->setCode('CS.E.MVN');
-        $message->setDescription("Maven failed to lint this project.\n" . $stdout);
-        $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
-        return array($message);
+        throw new ArcanistUsageException("Maven failed to lint this project. Reason:\n"
+            . $stdout);
     }
 
     $ok = $report_dom->loadXML($content);
     if (!$ok) {
-        return false;
+        throw new ArcanistUsageException("Arcanist could not load the linter output. "
+            . "Either the linter failed to produce a meaningful response or "
+            . "failed to write the file.");
     }
 
     $files = $report_dom->getElementsByTagName('file');
