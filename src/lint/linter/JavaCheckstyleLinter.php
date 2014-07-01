@@ -119,9 +119,17 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
     $content = file_get_contents($tmp_file);
     unlink($tmp_file);
 
+    if (!$content) {
+        $message = new ArcanistLintMessage();
+        $message->setCode('CS.E.MVN');
+        $message->setDescription("Maven failed to lint this project.\n" . $stdout);
+        $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+        return array($message);
+    }
+
     $ok = $report_dom->loadXML($content);
     if (!$ok) {
-      return false;
+        return false;
     }
 
     $files = $report_dom->getElementsByTagName('file');
