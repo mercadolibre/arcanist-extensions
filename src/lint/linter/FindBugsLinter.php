@@ -20,6 +20,7 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
         foreach ($messages as $message) {
             $this->addLintMessage($message);
         }
+        return $messages;
     }
 
     public function getMandatoryFlags() {
@@ -52,7 +53,7 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
        return $files;
     }
 
-    private function parseReport($report) {
+    private function parseReport($report, $files) {
         $report_dom = new DOMDocument();
         $content = file_get_contents($report);
 
@@ -62,40 +63,51 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
         }
 
         $bugs = $report_dom->getElementsByTagName('BugInstance');
+        $base = $report_dom->getElementsByTagName('SrcDir')->item(0)->nodeValue;
+
         $messages = array();
         foreach ($bugs as $bug) {
+            $description = $bug->getElementsByTagName('LongMessage');
+            $description = $description->item(0);
+            $description = $description->nodeValue;
+            $sourceline = $bug->getElementsByTagName('SourceLine')->item(0);
 
-                $description = $bug->getElementsByTagName('ShortMessage');
-                $description = $description->item(0);
-                $description = $description->nodeValue;
+            $severity = $bug->getAttribute('priority');
+            if ($severity >= 5) {
+                $prefix = 'E';
+            } else {
+                $prefix = 'W';
+            }
 
-                $sourceline = $bug->getElementsByTagName('SourceLine')->item(0);
+            $code = 'FB.'.$prefix.'.'.$bug->getAttribute('type');
 
-                $severity = $bug->getAttribute('priority');
-                if ($severity >= 5) {
-                    $prefix = 'E';
-                } else {
-                    $prefix = 'W';
+            $message = new ArcanistLintMessage();
+            $sourcePath = $sourceline->getAttribute('sourcepath');
+            $message->setPath($base . '/' . $sourcePath);
+            $message->setCode($code);
+            $message->setDescription($description);
+            $message->setSeverity($this->getLintMessageSeverity($code));
+
+            // do we have a start line?
+            $line = $sourceline->getAttribute('start');
+            if ($line != "") {
+                $message->setLine(intval($line));
+            }
+
+            // skip files not in diff/changed
+            $curPath = $sourceline->getAttribute('sourcepath');
+            foreach ($files as $file) {
+                if (!strcmp(realpath($file), realpath($base . '/' . $curPath))) {
+                    $messages[] = $message;
                 }
-
-                $code = 'FB.'.$prefix.'.'.$bug->getAttribute('abbrev');
-
-                $message = new ArcanistLintMessage();
-                $message->setPath($sourceline->getAttribute('sourcepath'));
-                $message->setLine($sourceline->getAttribute('start'));
-                $message->setChar('0');
-                $message->setCode($code);
-                $message->setDescription($description);
-                $message->setSeverity($this->getLintMessageSeverity($code));
-
-                $messages[] = $message;
+            }
         }
 
         return $messages;
     }
     
     protected function getDefaultMessageSeverity($code) {
-        if (preg_match('/^FB\\.W\\./', $code)) {
+        if (substr($code, 5) == "FB.W.") {
             return ArcanistLintSeverity::SEVERITY_WARNING;
         } else {
             return ArcanistLintSeverity::SEVERITY_ERROR;
@@ -114,10 +126,9 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
 
         $reports = $this->findFindBugsXmlFiles();
         foreach ($reports as $report) {
-            printf("Linting report %s\n", $report);    
-            $newMessages = $this->parseReport($report);
+            $newMessages = $this->parseReport($report, $paths);
             $messages += $newMessages;
-        } 
+        }
         return $messages;
     }
 
