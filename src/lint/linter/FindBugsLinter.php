@@ -25,6 +25,7 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
 
     public function getMandatoryFlags() {
         return array(
+            'clean',
             'compile',
             'findbugs:findbugs'
         );
@@ -129,7 +130,7 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
         $binary = $this->getDefaultBinary();
         $mandatoryArgs = $this->getMandatoryFlags();
         $defaultArgs = $this->getDefaultFlags();
-        return (string) csprintf('%C %LR %LR %Ls', $binary, $mandatoryArgs, $defaultArgs, $paths);
+        return (string) csprintf('%C %LR %LR', $binary, $mandatoryArgs, $defaultArgs);
     }
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
