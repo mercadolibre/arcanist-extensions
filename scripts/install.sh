@@ -2,11 +2,12 @@
 
 set -e -o pipefail -o nounset;
 
-OPTS="hp:";
-DEFAULT_INSTALL_PATH="/opt"
-DEFAULT_TARGET_NAME="arc-lint"
-DEFAULT_REPO_HOST="git@monits.com"
-DEFAULT_REPO_PATH="monits/arc-lint"
+OPTS="h";
+
+DEFAULT_INSTALL_PATH="/opt";
+DEFAULT_TARGET_NAME="arc-lint";
+DEFAULT_REPO_HOST="git@monits.com";
+DEFAULT_REPO_PATH="monits/arc-lint";
 
 COPY="Monits 2014";
 HELP=$(cat << _EOF
@@ -99,18 +100,11 @@ function checkout() {
     cd -
 }
 
-function _repo_is_installed() {
-    test -d "$REPO_TARGET_PATH" 
-    return $?
-}
-
-
 function install_posix() {
-    echo "installing $1 version at $TARGET_PATH";
-    if _repo_is_installed; then
-        echo "$TARGET_PATH exists. Aborting";
-        exit 1;
-    fi
+    # clean everything up so we can start afresh.
+    remove_posix;
+
+    echo "Installing $1 version at $TARGET_PATH";
 
     sudo mkdir -p "$REPO_TARGET_PATH"
     sudo chown -R "$USER" "$REPO_TARGET_PATH"
@@ -118,8 +112,8 @@ function install_posix() {
     clone_repo;
     checkout "$1";
 
-    sudo ln -s "$REPO_TARGET_PATH/src" "$TARGET_PATH";
-    sudo ln -s "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH";
+    sudo ln -fs "$REPO_TARGET_PATH/src" "$TARGET_PATH";
+    sudo ln -fs "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH";
     sudo chmod uga+x "$SCRIPT_PATH";
     sudo chown -R "$USER" "$TARGET_PATH";
 
@@ -135,11 +129,9 @@ function update_posix() {
 
 
 function remove_posix() {
-    echo "Removing $1 at $TARGET_PATH";
     sudo rm -rf "$TARGET_PATH";
     sudo rm -rf "$REPO_TARGET_PATH";
     sudo rm -f "$SCRIPT_PATH";
-    echo "Done."
 }
 
 function main() {
@@ -166,7 +158,9 @@ function main() {
             ;;
 
         "remove")
-            remove_posix $TAG;
+            echo "Removing $TARGET_PATH";
+            remove_posix;
+            echo "Done."
             ;;
     esac;
 }
