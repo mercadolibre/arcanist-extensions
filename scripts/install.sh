@@ -47,7 +47,19 @@ function parse_options() {
 }
 
 function find_tag() {
-    git tag --sort='-v:refname' | grep -E "$1" -m 1;
+    # 4) sort by dev, RC and final
+    # 3) sort by revision
+    # 2) sort by minor
+    # 1) sort by major
+    # all sorts are stable, and in reverse order so they stack up.
+    git tag \
+        | sort -drs -t'-' -k2,2     \
+        | sort -nrs -t'.' -k3,3     \
+        | sort -nrs -t'.' -k2,2     \
+        | sort -nrs -t'.' -k1,1     \
+        | grep -E "$1" -m 1         \
+        || echo ""                  \
+        ;
 }
 
 function clone_repo() {
@@ -63,10 +75,18 @@ function checkout() {
    case "$tag" in
        "stable")
             tag=$(find_tag "^[^-]+$");
+            if [ -z "$tag" ]; then
+                echo "Couldn't find a stable version for this repo.";
+                return 4;
+            fi
             ;;
 
         "rc")
             tag=$(find_tag "^.+-RC[0-9]+$");
+            if [ -z "$tag" ]; then
+                echo "Couldn't find a release candidate for this repo.";
+                return 4;
+            fi
             ;;
         "edge")
             tag="staging";
