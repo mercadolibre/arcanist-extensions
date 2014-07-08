@@ -126,6 +126,13 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
                 $message->setSeverity(
                     ArcanistLintSeverity::SEVERITY_ADVICE);
             }
+            
+            // Ignore gradle subprojects
+            if ((string)$issue_attrs->id == 'LintError') {
+                $message->setSeverity(
+                    ArcanistLintSeverity::SEVERITY_ADVICE);
+            }
+
 
             $messages[] = $message;
         }
