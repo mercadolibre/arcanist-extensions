@@ -1,6 +1,6 @@
 <?php
 
-final class ArcanistSassLinter extends ArcanistExternalLinter {
+final class ArcanistSassLinter extends ConfigPathLinter {
 
     public function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
@@ -27,17 +27,6 @@ final class ArcanistSassLinter extends ArcanistExternalLinter {
 
     public function shouldExpectCommandErrors() {
         return true;
-    }
-
-    public function getLinterConfigurationOptions() {
-        $options = parent::getLinterConfigurationOptions();
-
-        $options['paths'] = array(
-            'type' => 'optional list<string>',
-            'help' => 'An optional list of paths to be checked'
-        );
-
-        return $options;
     }
 
     protected function parseLinterOutput($path, $err, $stdout, $stderr) {

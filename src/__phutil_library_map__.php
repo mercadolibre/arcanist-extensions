@@ -17,6 +17,7 @@ phutil_register_library_map(array(
     'ArcanistOCLintLinter' => 'lint/linter/OCLintLinter.php',
     'ArcanistSassLinter' => 'lint/linter/SassLinter.php',
     'ArcanistSingleRunLinter' => 'lint/linter/ArcanistSingleRunLinter.php',
+    'ConfigPathLinter' => 'lint/linter/ConfigPathLinter.php',
   ),
   'function' =>
   array(
@@ -25,10 +26,11 @@ phutil_register_library_map(array(
   array(
     'ArcanistAndroidLinter' => 'ArcanistLinter',
     'ArcanistCheckstyleLinter' => 'ArcanistSingleRunLinter',
-    'ArcanistESLintLinter' => 'ArcanistExternalLinter',
+    'ArcanistESLintLinter' => 'ConfigPathLinter',
     'ArcanistFindBugsLinter' => 'ArcanistLinter',
     'ArcanistOCLintLinter' => 'ArcanistLinter',
-    'ArcanistSassLinter' => 'ArcanistExternalLinter',
+    'ArcanistSassLinter' => 'ConfigPathLinter',
     'ArcanistSingleRunLinter' => 'ArcanistLinter',
+    'ConfigPathLinter' => 'ArcanistExternalLinter',
   ),
 ));
