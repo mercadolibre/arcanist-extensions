@@ -38,37 +38,57 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @group linter
  */
 final class ArcanistAndroidLinter extends ArcanistLinter {
-    
+
+    public function getDefaultBinary() {
+        $ANDROID_HOME = getenv('ANDROID_HOME');
+        if (!$ANDROID_HOME) {
+            throw new ArcanistUsageException('$ANDROID_HOME does not seem to '
+            . 'be set up. Your android sdk installation might be incomplete, '
+            . 'missing or outright broken.');
+        }
+        return $ANDROID_HOME . '/tools/lint';
+    }
+
     private function getLintPath() {
-        $lint_bin = "lint";
+        $lint_bin = $this->getDefaultBinary();
 
         list($err, $stdout) = exec_manual('which %s', $lint_bin);
         if ($err) {
-            throw new ArcanistUsageException("Lint does not appear to be "
-            . "available on the path. Make sure that the Android tools "
-            . "directory is part of your path.");
+            throw new ArcanistUsageException('Lint does not appear to be '
+            . 'available on the path. Make sure that the Android tools '
+            . 'directory is part of your path.');
         }
 
         return trim($stdout);
     }
 
-    private function runLint($path) {
+
+    private function constructPaths($paths) {
+        $fullPaths = array();
+        foreach ($paths as $path) {
+            $fullPaths[] = $this->getEngine()->getFilePathOnDisk($path);
+        }
+        return $fullPaths;
+    }
+
+    private function runLint($paths) {
         $lint_bin = $this->getLintPath();
-        $path_on_disk = $this->getEngine()->getFilePathOnDisk($path);
         $arc_lint_location = tempnam(sys_get_temp_dir(), 'arclint.xml');
 
-        list($err) = exec_manual(
-            '%s --showall --nolines --fullpath --quiet --xml %s %s',
-            $lint_bin, $arc_lint_location, $path_on_disk);
+        $fullPaths = $this->constructPaths($paths);
+        $cmd = (string) csprintf("%C --showall --nolines --fullpath --quiet --xml %s %Ls",
+            $lint_bin, $arc_lint_location, $fullPaths);
+        list($err, $stdout, $stderr) = exec_manual($cmd);
         if ($err != 0 && $err != 1) {
-            throw new ArcanistUsageException("Error executing lint command");
+            throw new ArcanistUsageException("Error executing lint " 
+                . "command:\n" . $stdout . "\n\n" . $stderr);
         }
 
         return $arc_lint_location;
     }
 
     public function willLintPaths(array $paths) {
-        return;
+        return $this->lintPaths($paths);
     }
     
     public function getLinterConfigurationName() {
@@ -140,19 +160,23 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
         return $messages;
     }
 
-    public function lintPath($path) {
+    // Try to lint all the paths at once. We still need to implement this
+    // method, though.
+    public function lintPath($path) {}
+
+    public function lintPaths($paths) {
         $lint_bin = $this->getLintPath();
         $lint_lib_path = dirname($lint_bin) . '/lib';
         
         $_java_options = getenv('_JAVA_OPTIONS');
         putenv('_JAVA_OPTIONS=-Djava.awt.headless=true');
 
-        $arc_lint_location = $this->runLint($path);
+        $arc_lint_location = $this->runLint($paths);
         $contents = file_get_contents($arc_lint_location);
 
         if (!$contents) {
             throw new ArcanistUsageException('The linter returned an empty '
-                . 'response. This usually means something went wrong. Aborting.');
+            . 'response. This usually means something went wrong. Aborting.');
         }
 
         $filexml = simplexml_load_string($contents);
