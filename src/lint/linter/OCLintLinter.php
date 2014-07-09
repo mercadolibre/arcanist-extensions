@@ -3,6 +3,58 @@
 
 final class ArcanistOCLintLinter extends ArcanistLinter {
 
+    private $_xctoolPath = '/opt/xctool/xctool.sh';
+
+    private $_oclintBin = 'oclint-json-compilation-database';
+
+    public function getLinterConfigurationOptions() {
+        $options = parent::getLinterConfigurationOptions();
+
+        $options['xctool'] = array(
+            'type' => 'optional string',
+            'help' => 'Path to xctool.sh'
+        );
+
+        $options['oclint'] = array(
+            'type' => 'optional string',
+            'help' => 'Path to oclint-json-compilation-database'
+        );
+
+        return $options;
+    }
+
+    public function setLinterConfigurationValue($key, $value) {
+        switch($key) {
+        case 'xctool':
+            $this->_xctoolPath = $value;
+            return;
+        case 'oclint':
+            $this->_oclintBin = $value;
+            return;
+        }
+        return parent::setLinterConfigurationValue($key, $value);
+    }
+
+    private function getDefaultBinary() {
+
+        list($err, $stdout) = exec_manual('which %s', $this->_oclintBin);
+        if ($err) {
+            throw new ArcanistUsageException("can't find oclint");
+        }
+
+        return trim($stdout);
+    }
+
+    private function getXCToolPath() {
+
+        list($err, $stdout) = exec_manual('which %s', $this->_xctoolPath);
+        if ($err) {
+            throw new ArcanistUsageException("can't find xctool");
+        }
+
+        return trim($stdout);
+    }
+
     public function getLinterName() {
         return 'oclint';
     }
@@ -11,30 +63,65 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
         return 'oclint';
     }
 
-    protected function getOCLintOpts() {
-        $config = $this->getEngine()->getConfigurationManager();
-        $opts = $config->getConfigFromAnySource('lint.oclint.options', array());
-
-        array_push($opts, '-report-type', 'text');
-
-        return $opts;
+    protected function getPathsArgumentForLinter($paths) {
+        return '-i ' . implode('-i ', $paths);
     }
 
-    protected function getCompilerOpts() {
-        $config = $this->getEngine()->getConfigurationManager();
-        $compilerOpts = $config->getConfigFromAnySource('lint.oclint.options', array());
-
-        array_push($compilerOpts, '-x', 'objective-c', '-c');
-
-        return $compilerOpts;
+    protected function getMandatoryFlags() {
+        return array(
+        );
     }
 
-    private function parseOCLintOutput($output) {
-        $errorRegex = "/(?<file>(\/(\w|-|\.)+)+):(?P<line>\d+):(?P<col>\d+): (?P<severity>\w+): (?<error>.*)/is";
+    protected function getDefaultFlags() {
+        $config = $this->getEngine()->getConfigurationManager();
+        return $config->getConfigFromAnySource('lint.oclint.options', array());
+    }
+
+    final public function lintPath($path) {
+    }
+
+    final public function willLintPaths(array $paths) {
+
+
+        $result = exec_manual('%s -reporter json-compilation-database:compile_commands.json clean build', $this->getXCToolPath());
+        if ($result[0]) {
+            throw new Exception('failed executing xctool' . PHP_EOL . $result[2]);
+        }
+
+        $result = exec_manual($this->buildCommand($paths));
+        $messages = $this->parseLinterOutput($paths, $result[0], $result[1], $result[2]);
+
+        foreach ($messages as $message) {
+            $this->addLintMessage($message);
+        }
+    }
+
+    final protected function buildCommand($paths) {
+        $binary = $this->getDefaultBinary();
+        $args = implode(' ', $this->getMandatoryFlags());
+        $args = $args . implode(' ', $this->getDefaultFlags());
+        $paths = $this->getPathsArgumentForLinter($paths);
+        return "$binary $args $paths";
+    }
+
+    final public function didRunLinters() {
+        foreach ($this->paths as $path) {
+            $this->willLintPath($path);
+        }
+    }
+
+    protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
+        $errorRegex = "/(?<file>(\/(\w|-|\.)+)+):(?P<line>\d+):(?P<col>\d+): (?<error>.*)/is";
         $messages = array();
-        foreach ($output as $line) {
+
+        if ($stdout === '') {
+            return $messages;
+        }
+
+        foreach (explode("\n", $stdout) as $line) {
             $matches = array();
             if ($c = preg_match($errorRegex, $line, $matches)) {
+
                 $message = new ArcanistLintMessage();
                 $message->setPath($matches['file']);
                 $message->setLine($matches['line']);
@@ -57,31 +144,4 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
         return $messages;
     }
 
-    public function lintPath($path) {
-        list($err, $stdout) = exec_manual('which oclint');
-        if ($err) {
-            throw new ArcanistUsageException("OCLint does not appear to be "
-                ."available on the path. Make sure that the OCLint is "
-                ."installed.");
-        }
-
-        $pathOnDisk = $this->getEngine()->getFilePathOnDisk($path);
-        $currentDirectory = dirname($pathOnDisk);
-        $ocLintPath = strstr($stdout, "\n", true);
-
-        try {
-            $stdout = array();
-            $_ = 0;
-            $ocLintOpts = implode(' ', $this->getOCLintOpts());
-            $compilerOpts = implode(' ', $this->getCompilerOpts());
-            exec("$ocLintPath $ocLintOpts $pathOnDisk -- $compilerOpts 2>&1", $stdout, $_);
-        } catch (CommandException $e) {
-            $stdout = $e->getStdout();
-        }
-
-        $messages = $this->parseOCLintOutput($stdout);
-        foreach ($messages as $message) {
-            $this->addLintMessage($message);
-        }
-    }
 }
