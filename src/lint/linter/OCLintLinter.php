@@ -135,13 +135,7 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
                 $message->setChar($matches['col']);
                 $message->setCode($matches['error']);
 
-                if ($matches['severity'] === 'error') {
-                    $message->setSeverity(
-                        ArcanistLintSeverity::SEVERITY_ERROR);
-                } else {
-                    $message->setSeverity(
-                        ArcanistLintSeverity::SEVERITY_WARNING);
-                }
+                $message->setSeverity(ArcanistLintSeverity::SEVERITY_WARNING);
 
                 $message->setName('OCLINT.' . $matches['error']);
 
