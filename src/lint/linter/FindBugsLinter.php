@@ -136,6 +136,16 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
         $messages = array();
 
+        if ($err) {
+            $message = new ArcanistLintMessage();
+            $message->setCode('MVN.COMPILE');
+            $message->setDescription('Compilation failed.');
+            $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+
+            $messages[] = $message;
+            return $messages;
+        }
+
         $reports = $this->findFindBugsXmlFiles();
         foreach ($reports as $report) {
             $newMessages = $this->parseReport($report, $paths);
