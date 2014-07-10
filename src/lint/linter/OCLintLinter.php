@@ -5,7 +5,7 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
 
     private $_xctoolPath = '/opt/xctool/xctool.sh';
 
-    private $_oclintBin = 'oclint-json-compilation-database';
+    private $_oclintBin = 'oclint';
 
     public function getLinterConfigurationOptions() {
         $options = parent::getLinterConfigurationOptions();
@@ -64,11 +64,15 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
     }
 
     protected function getPathsArgumentForLinter($paths) {
-        return '-i ' . implode('-i ', $paths);
+        return implode(' ', $paths);
     }
 
     protected function getMandatoryFlags() {
+        $working_copy = $this->getEngine()->getWorkingCopy();
+        $root = $working_copy->getProjectRoot();
+
         return array(
+            '-p ' . $root
         );
     }
 
@@ -82,6 +86,9 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
 
     final public function willLintPaths(array $paths) {
 
+        $working_copy = $this->getEngine()->getWorkingCopy();
+        $root = $working_copy->getProjectRoot();
+        chdir($root);
 
         $result = exec_manual('%s -reporter json-compilation-database:compile_commands.json clean build', $this->getXCToolPath());
         if ($result[0]) {
