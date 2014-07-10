@@ -21,7 +21,7 @@
         "no-new-object": 1,
         "no-lonely-if": 1,
         "new-parens": 1,
-        "no-yoda": 1,
+        "yoda": [1, "never"],
         "no-unused-expressions": 1,
         "no-sequences": 1,
         "no-redeclare": 1,
