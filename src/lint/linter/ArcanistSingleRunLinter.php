@@ -6,6 +6,10 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
     }
 
     final public function willLintPaths(array $paths) {
+        $working_copy = $this->getEngine()->getWorkingCopy();
+        $root = $working_copy->getProjectRoot(); 
+        chdir($root);
+
         $result = exec_manual($this->buildCommand($paths));
         $messages = $this->parseLinterOutput($paths, $result[0], $result[1], $result[2]);
 

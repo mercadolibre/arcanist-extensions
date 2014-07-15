@@ -20,10 +20,12 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
         foreach ($messages as $message) {
             $this->addLintMessage($message);
         }
+        return $messages;
     }
 
     public function getMandatoryFlags() {
         return array(
+            'clean',
             'compile',
             'findbugs:findbugs'
         );
@@ -49,53 +51,75 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
        foreach ($matches as $match) {
            $files[] = $match[0];
        }
+       if (!count($files)) {
+            throw new ArcanistUsageException('Could not find any findBug output files. '
+                . 'Check this project is correctly configured and actually a Java project.');
+       }
        return $files;
     }
 
-    private function parseReport($report) {
+    private function parseReport($report, $files) {
         $report_dom = new DOMDocument();
         $content = file_get_contents($report);
 
+        if (!$content) {
+            throw new ArcanistUsageException('The linter failed to produce a '
+                . 'meaningful output. This might be due to reading an empty '
+                . 'file. Try running `mvn clean` and then this linter again.');
+        }
+
         $ok = $report_dom->loadXML($content);
         if (!$ok) {
-            return false;
+            throw new ArcanistUsageException('Arcanist failed to understand the '
+                . 'linter output. Aborting.');
         }
 
         $bugs = $report_dom->getElementsByTagName('BugInstance');
+        $base = $report_dom->getElementsByTagName('SrcDir')->item(0)->nodeValue;
+
         $messages = array();
         foreach ($bugs as $bug) {
+            $description = $bug->getElementsByTagName('LongMessage');
+            $description = $description->item(0);
+            $description = $description->nodeValue;
+            $sourceline = $bug->getElementsByTagName('SourceLine')->item(0);
 
-                $description = $bug->getElementsByTagName('ShortMessage');
-                $description = $description->item(0);
-                $description = $description->nodeValue;
+            $severity = $bug->getAttribute('priority');
+            if ($severity >= 5) {
+                $prefix = 'E';
+            } else {
+                $prefix = 'W';
+            }
 
-                $sourceline = $bug->getElementsByTagName('SourceLine')->item(0);
+            $code = 'FB.'.$prefix.'.'.$bug->getAttribute('type');
 
-                $severity = $bug->getAttribute('priority');
-                if ($severity >= 5) {
-                    $prefix = 'E';
-                } else {
-                    $prefix = 'W';
+            $message = new ArcanistLintMessage();
+            $sourcePath = $sourceline->getAttribute('sourcepath');
+            $message->setPath($base . '/' . $sourcePath);
+            $message->setCode($code);
+            $message->setDescription($description);
+            $message->setSeverity($this->getLintMessageSeverity($code));
+
+            // do we have a start line?
+            $line = $sourceline->getAttribute('start');
+            if ($line != "") {
+                $message->setLine(intval($line));
+            }
+
+            // skip files not in diff/changed
+            $curPath = $sourceline->getAttribute('sourcepath');
+            foreach ($files as $file) {
+                if (!strcmp(realpath($file), realpath($base . '/' . $curPath))) {
+                    $messages[] = $message;
                 }
-
-                $code = 'FB.'.$prefix.'.'.$bug->getAttribute('abbrev');
-
-                $message = new ArcanistLintMessage();
-                $message->setPath($sourceline->getAttribute('sourcepath'));
-                $message->setLine($sourceline->getAttribute('start'));
-                $message->setChar('0');
-                $message->setCode($code);
-                $message->setDescription($description);
-                $message->setSeverity($this->getLintMessageSeverity($code));
-
-                $messages[] = $message;
+            }
         }
 
         return $messages;
     }
     
     protected function getDefaultMessageSeverity($code) {
-        if (preg_match('/^FB\\.W\\./', $code)) {
+        if (substr($code, 5) == "FB.W.") {
             return ArcanistLintSeverity::SEVERITY_WARNING;
         } else {
             return ArcanistLintSeverity::SEVERITY_ERROR;
@@ -106,18 +130,27 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
         $binary = $this->getDefaultBinary();
         $mandatoryArgs = $this->getMandatoryFlags();
         $defaultArgs = $this->getDefaultFlags();
-        return (string) csprintf('%C %LR %LR %Ls', $binary, $mandatoryArgs, $defaultArgs, $paths);
+        return (string) csprintf('%C %LR %LR', $binary, $mandatoryArgs, $defaultArgs);
     }
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
         $messages = array();
 
+        if ($err) {
+            $message = new ArcanistLintMessage();
+            $message->setCode('MVN.COMPILE');
+            $message->setDescription('Compilation failed.');
+            $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+
+            $messages[] = $message;
+            return $messages;
+        }
+
         $reports = $this->findFindBugsXmlFiles();
         foreach ($reports as $report) {
-            printf("Linting report %s\n", $report);    
-            $newMessages = $this->parseReport($report);
+            $newMessages = $this->parseReport($report, $paths);
             $messages += $newMessages;
-        } 
+        }
         return $messages;
     }
 

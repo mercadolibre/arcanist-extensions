@@ -2,11 +2,12 @@
 
 set -e -o pipefail -o nounset;
 
-OPTS="hp:";
-DEFAULT_INSTALL_PATH="/opt"
-DEFAULT_TARGET_NAME="arc-lint"
-DEFAULT_REPO_HOST="git@monits.com"
-DEFAULT_REPO_PATH="monits/arc-lint"
+OPTS="h";
+
+DEFAULT_INSTALL_PATH="/opt";
+DEFAULT_TARGET_NAME="arc-lint";
+DEFAULT_REPO_HOST="git@monits.com";
+DEFAULT_REPO_PATH="monits/arc-lint";
 
 COPY="Monits 2014";
 HELP=$(cat << _EOF
@@ -47,7 +48,19 @@ function parse_options() {
 }
 
 function find_tag() {
-    git tag --sort='-v:refname' | grep -E "$1" -m 1;
+    # 4) sort by dev, RC and final
+    # 3) sort by revision
+    # 2) sort by minor
+    # 1) sort by major
+    # all sorts are stable, and in reverse order so they stack up.
+    git tag \
+        | sort -drs -t'-' -k2,2     \
+        | sort -nrs -t'.' -k3,3     \
+        | sort -nrs -t'.' -k2,2     \
+        | sort -nrs -t'.' -k1,1     \
+        | grep -E "$1" -m 1         \
+        || echo ""                  \
+        ;
 }
 
 function clone_repo() {
@@ -63,10 +76,18 @@ function checkout() {
    case "$tag" in
        "stable")
             tag=$(find_tag "^[^-]+$");
+            if [ -z "$tag" ]; then
+                echo "Couldn't find a stable version for this repo.";
+                return 4;
+            fi
             ;;
 
         "rc")
             tag=$(find_tag "^.+-RC[0-9]+$");
+            if [ -z "$tag" ]; then
+                echo "Couldn't find a release candidate for this repo.";
+                return 4;
+            fi
             ;;
         "edge")
             tag="staging";
@@ -79,18 +100,11 @@ function checkout() {
     cd -
 }
 
-function _repo_is_installed() {
-    test -d "$REPO_TARGET_PATH" 
-    return $?
-}
-
-
 function install_posix() {
-    echo "installing $1 version at $TARGET_PATH";
-    if _repo_is_installed; then
-        echo "$TARGET_PATH exists. Aborting";
-        exit 1;
-    fi
+    # clean everything up so we can start afresh.
+    remove_posix;
+
+    echo "Installing $1 version at $TARGET_PATH";
 
     sudo mkdir -p "$REPO_TARGET_PATH"
     sudo chown -R "$USER" "$REPO_TARGET_PATH"
@@ -98,8 +112,8 @@ function install_posix() {
     clone_repo;
     checkout "$1";
 
-    sudo ln -s "$REPO_TARGET_PATH/src" "$TARGET_PATH";
-    sudo ln -s "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH";
+    sudo ln -fs "$REPO_TARGET_PATH/src" "$TARGET_PATH";
+    sudo ln -fs "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH";
     sudo chmod uga+x "$SCRIPT_PATH";
     sudo chown -R "$USER" "$TARGET_PATH";
 
@@ -115,11 +129,9 @@ function update_posix() {
 
 
 function remove_posix() {
-    echo "Removing $1 at $TARGET_PATH";
     sudo rm -rf "$TARGET_PATH";
     sudo rm -rf "$REPO_TARGET_PATH";
     sudo rm -f "$SCRIPT_PATH";
-    echo "Done."
 }
 
 function main() {
@@ -146,7 +158,9 @@ function main() {
             ;;
 
         "remove")
-            remove_posix $TAG;
+            echo "Removing $TARGET_PATH";
+            remove_posix;
+            echo "Done."
             ;;
     esac;
 }

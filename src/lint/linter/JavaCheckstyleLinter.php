@@ -119,9 +119,16 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
     $content = file_get_contents($tmp_file);
     unlink($tmp_file);
 
+    if (!$content) {
+        throw new ArcanistUsageException("Maven failed to lint this project. Reason:\n"
+            . $stdout);
+    }
+
     $ok = $report_dom->loadXML($content);
     if (!$ok) {
-      return false;
+        throw new ArcanistUsageException("Arcanist could not load the linter output. "
+            . "Either the linter failed to produce a meaningful response or "
+            . "failed to write the file.");
     }
 
     $files = $report_dom->getElementsByTagName('file');

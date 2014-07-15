@@ -33,9 +33,18 @@ final class ArcanistSassLinter extends ConfigPathLinter {
         $messages = array();
         $report_dom = new DOMDocument();
 
+        if (!$stdout) {
+            throw new ArcanistUsageException('The linter produced no output. '
+                . 'This might be a bug, so I\'m showing you the stderr below:'
+                . "\n" . $stderr);
+        }
+
         $ok = $report_dom->loadXML($stdout);
         if (!$ok) {
-            return false;
+            throw new ArcanistUsageException('The linter produced no parseable '
+                . 'output. This might be a bug, so I\'m showing you '
+                . 'the stderr below:'
+                . "\n" . $stderr);
         }
 
         $files = $report_dom->getElementsByTagName('file');
