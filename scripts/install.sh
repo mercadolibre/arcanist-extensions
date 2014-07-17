@@ -95,6 +95,7 @@ function checkout() {
         *)
             ;;
     esac;
+    git fetch;
     git checkout "$tag" > /dev/null 2>&1;
     git pull origin "$tag" > /dev/null 2>&1;
     cd -
