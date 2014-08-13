@@ -2,6 +2,6 @@
     "project_id": "arc-lint",
     "conduit_uri": "http://ph.monits.com",
     "load": [
-        "arc-lint/src"
+        "src"
     ]
 }

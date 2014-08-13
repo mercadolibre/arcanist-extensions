@@ -1,6 +1,6 @@
 <?php
 
-final class ArcanistESLintLinter extends ArcanistExternalLinter {
+final class ArcanistESLintLinter extends ConfigPathLinter {
 
     public function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
@@ -14,11 +14,9 @@ final class ArcanistESLintLinter extends ArcanistExternalLinter {
     }
 
     public function getInstallInstructions() {
-        return 'Kindly do install eslint via npm (npm install -g eslint). '
+        return 'Install eslint via npm (npm install -g eslint). '
             . 'Much obliged.';
     }
-
-
 
     public function getLinterName() {
         return 'eslint';
@@ -30,17 +28,6 @@ final class ArcanistESLintLinter extends ArcanistExternalLinter {
 
     public function shouldExpectCommandErrors() {
         return true;
-    }
-
-    public function getLinterConfigurationOptions() {
-        $options = parent::getLinterConfigurationOptions();
-
-        $options['paths'] = array(
-            'type' => 'optional list<string>',
-            'help' => 'An optional list of paths to be checked'
-        );
-
-        return $options;
     }
 
     protected function parseLinterOutput($path, $err, $stdout, $stderr) {
