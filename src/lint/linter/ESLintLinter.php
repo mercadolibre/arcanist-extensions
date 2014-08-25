@@ -61,7 +61,7 @@ final class ArcanistESLintLinter extends ConfigPathLinter {
                     $prefix = 'W';
                 }
 
-                $code = 'ESLINT.'.$prefix.'.'.$child->getAttribute('source');
+                $code = 'ESLINT.'.$prefix.'.'.$child->getAttribute('message');
 
                 $message = new ArcanistLintMessage();
                 $message->setPath($path);
