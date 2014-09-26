@@ -64,7 +64,12 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
     }
 
     protected function getPathsArgumentForLinter($paths) {
-        return implode(' ', $paths);
+        $quoted_paths = array();
+        foreach ($paths as $path) {
+            $quoted_paths[] = escapeshellarg(addcslashes($path, ' '));
+        }
+
+        return implode(' ', $quoted_paths);
     }
 
     protected function getMandatoryFlags() {
@@ -72,7 +77,7 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
         $root = $working_copy->getProjectRoot();
 
         return array(
-            '-p ' . $root
+            '-p "' . $root . '"'
         );
     }
 
