@@ -123,7 +123,7 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
     }
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
-        $errorRegex = "/(?<file>(\/(\w|-|\.)+)+):(?P<line>\d+):(?P<col>\d+): (?<error>.*)/is";
+        $errorRegex = "/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+): (?<error>.*)/is";
         $messages = array();
 
         if ($stdout === '') {
