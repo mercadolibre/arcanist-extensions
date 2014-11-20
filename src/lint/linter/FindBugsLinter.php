@@ -82,7 +82,8 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
             $description = $bug->getElementsByTagName('LongMessage');
             $description = $description->item(0);
             $description = $description->nodeValue;
-            $sourceline = $bug->getElementsByTagName('SourceLine')->item(0);
+            $sourcelineList = $bug->getElementsByTagName('SourceLine');
+            $sourceline = $sourcelineList->item($sourcelineList->length - 1);
 
             $severity = $bug->getAttribute('priority');
             if ($severity >= 5) {
