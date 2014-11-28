@@ -42,7 +42,8 @@ final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
         $classNames = array();
         foreach ($paths as $path) {
             $relativePath = $this->extractRelativeFilePath($path);
-            $class = str_replace('/', '.', preg_replace('/\.java$/', '', $relativePath));
+            $class = str_replace(
+                '/', '.', preg_replace('/\.java$/', '', $relativePath));
             $classNames[] = $class;
             /*
              * Let the hackish begin...
@@ -64,7 +65,8 @@ final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
 
     public function getDefaultFlags() {
         $config = $this->getEngine()->getConfigurationManager();
-        return $config->getConfigFromAnySource('lint.findbugs.options', array());
+        return $config->getConfigFromAnySource(
+            'lint.findbugs.options', array());
     }
 
     public function getDefaultBinary() {
@@ -76,15 +78,17 @@ final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
        $base = getcwd();
        $Directory = new RecursiveDirectoryIterator($base);
        $Iterator = new RecursiveIteratorIterator($Directory);
-       $Regex = new RegexIterator($Iterator, '/^.+target\/findbugsXml\.xml$/i', RecursiveRegexIterator::GET_MATCH);
+       $Regex = new RegexIterator($Iterator, '/^.+target\/findbugsXml\.xml$/i',
+           RecursiveRegexIterator::GET_MATCH);
        $matches = iterator_to_array($Regex);
        $files = array();
        foreach ($matches as $match) {
            $files[] = $match[0];
        }
        if (!count($files)) {
-            throw new ArcanistUsageException('Could not find any findBug output files. '
-                . 'Check this project is correctly configured and actually a Java project.');
+            throw new ArcanistUsageException('Could not find any findbugs'
+                . ' output files. Check this project is correctly configured'
+                . ' and actually a Java project.');
        }
        return $files;
     }
@@ -101,8 +105,8 @@ final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
 
         $ok = $report_dom->loadXML($content);
         if (!$ok) {
-            throw new ArcanistUsageException('Arcanist failed to understand the '
-                . 'linter output. Aborting.');
+            throw new ArcanistUsageException('Arcanist failed to understand the'
+                . ' linter output. Aborting.');
         }
 
         $bugs = $report_dom->getElementsByTagName('BugInstance');
@@ -141,7 +145,8 @@ final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
             // skip files not in diff/changed
             $curPath = $sourceline->getAttribute('sourcepath');
             foreach ($files as $file) {
-                if (!strcmp(realpath($file), realpath($base . '/' . $curPath))) {
+                if (!strcmp(realpath($file),
+                        realpath($base . '/' . $curPath))) {
                     $messages[] = $message;
                 }
             }
@@ -149,7 +154,7 @@ final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
 
         return $messages;
     }
-    
+
     protected function getDefaultMessageSeverity($code) {
         if (substr($code, 5) == "FB.W.") {
             return ArcanistLintSeverity::SEVERITY_WARNING;

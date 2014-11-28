@@ -1,7 +1,6 @@
-
 symbols:
-	arc liberate src/
+    arc liberate src/
 
 docs:
-	mkdir -p docs/api
-	phpdoc -d ./src -t ./docs/api
+    mkdir -p docs/api
+    phpdoc -d ./src -t ./docs/api

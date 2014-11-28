@@ -76,11 +76,12 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
         $arc_lint_location = tempnam(sys_get_temp_dir(), 'arclint.xml');
 
         $fullPaths = $this->constructPaths($paths);
-        $cmd = (string) csprintf("%C --showall --nolines --fullpath --quiet --xml %s %Ls",
+        $cmd = (string) csprintf(
+            "%C --showall --nolines --fullpath --quiet --xml %s %Ls",
             $lint_bin, $arc_lint_location, $fullPaths);
         list($err, $stdout, $stderr) = exec_manual($cmd);
         if ($err != 0 && $err != 1) {
-            throw new ArcanistUsageException("Error executing lint " 
+            throw new ArcanistUsageException("Error executing lint "
                 . "command:\n" . $stdout . "\n\n" . $stderr);
         }
 
@@ -90,7 +91,7 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
     public function willLintPaths(array $paths) {
         return $this->lintPaths($paths);
     }
-    
+
     public function getLinterConfigurationName() {
         return 'AndroidLint';
     }
@@ -146,7 +147,7 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
                 $message->setSeverity(
                     ArcanistLintSeverity::SEVERITY_ADVICE);
             }
-            
+
             // Ignore gradle subprojects
             if ((string)$issue_attrs->id == 'LintError') {
                 $message->setSeverity(
@@ -167,7 +168,7 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
     public function lintPaths($paths) {
         $lint_bin = $this->getLintPath();
         $lint_lib_path = dirname($lint_bin) . '/lib';
-        
+
         $_java_options = getenv('_JAVA_OPTIONS');
         putenv('_JAVA_OPTIONS=-Djava.awt.headless=true');
 

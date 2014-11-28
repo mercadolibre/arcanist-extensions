@@ -26,8 +26,9 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
 
     $options['aggregate'] = array(
         'type' => 'optional bool',
-        'help' => 'An optional flag to indicate wether the report should run in aggregate mode or not. '
-            . 'This value should typically be false for single-module projects. True by default.'
+        'help' => 'An optional flag to indicate wether the report should run'
+            . ' in aggregate mode or not. This value should typically be false'
+            . ' for single-module projects. True by default.'
     );
 
     return $options;
@@ -42,7 +43,8 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
   }
 
   public function getMandatoryFlags() {
-    $target = $this->_aggregate ? 'checkstyle:checkstyle-aggregate' : 'checkstyle:checkstyle';
+    $target = $this->_aggregate ?
+        'checkstyle:checkstyle-aggregate' : 'checkstyle:checkstyle';
     $temp_file = $this->buildOutputPath();
     return array(
       $target,
@@ -120,15 +122,15 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
     unlink($tmp_file);
 
     if (!$content) {
-        throw new ArcanistUsageException("Maven failed to lint this project. Reason:\n"
-            . $stdout);
+        throw new ArcanistUsageException('Maven failed to lint this project.'
+            . ' Reason:' . PHP_EOL . $stdout);
     }
 
     $ok = $report_dom->loadXML($content);
     if (!$ok) {
-        throw new ArcanistUsageException("Arcanist could not load the linter output. "
-            . "Either the linter failed to produce a meaningful response or "
-            . "failed to write the file.");
+        throw new ArcanistUsageException('Arcanist could not load the linter'
+            . ' output. Either the linter failed to produce a meaningful'
+            . ' response or failed to write the file.');
     }
 
     $files = $report_dom->getElementsByTagName('file');
@@ -173,4 +175,3 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
   }
 
 }
-

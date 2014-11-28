@@ -1,7 +1,27 @@
 {
     "linters": {
+        "json": {
+            "type": "json",
+            "include": [
+                "(^\\.arcconfig$)",
+                "(^\\.arclint$)"
+            ]
+        },
+        "chmod": {
+            "type": "chmod"
+        },
+        "merge-conflict": {
+            "type": "merge-conflict"
+        },
+        "spelling": {
+            "type": "spelling"
+        },
+        "text": {
+            "type": "text"
+        },
         "php": {
-            "type": "phutil-library"
+            "type": "phutil-library",
+            "include": "(\\.php$)"
         }
     }
 }

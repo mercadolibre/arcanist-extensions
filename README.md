@@ -96,4 +96,3 @@ You can find more about each linter in the attached README.md files under
 ## Updating Symbols
 
 Run `make symbols`, which just runs `arc liberate src/`.
-

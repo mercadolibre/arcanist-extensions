@@ -1,4 +1,3 @@
-
 <?php
 
 final class ArcanistOCLintLinter extends ArcanistLinter {
@@ -95,13 +94,17 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
         $root = $working_copy->getProjectRoot();
         chdir($root);
 
-        $result = exec_manual('%s -reporter json-compilation-database:compile_commands.json clean build', $this->getXCToolPath());
+        $result = exec_manual('%s -reporter'
+            . ' json-compilation-database:compile_commands.json clean build',
+            $this->getXCToolPath());
         if ($result[0]) {
-            throw new Exception('failed executing xctool' . PHP_EOL . $result[2]);
+            throw new Exception('failed executing xctool'
+                . PHP_EOL . $result[2]);
         }
 
         $result = exec_manual($this->buildCommand($paths));
-        $messages = $this->parseLinterOutput($paths, $result[0], $result[1], $result[2]);
+        $messages = $this->parseLinterOutput($paths,
+            $result[0], $result[1], $result[2]);
 
         foreach ($messages as $message) {
             $this->addLintMessage($message);
@@ -123,7 +126,8 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
     }
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
-        $errorRegex = "/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+): (?<error>.*)/is";
+        $errorRegex = "/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+):"
+            . " (?<error>.*)/is";
         $messages = array();
 
         if ($stdout === '') {
