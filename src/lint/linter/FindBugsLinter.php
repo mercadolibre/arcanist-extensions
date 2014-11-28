@@ -1,6 +1,6 @@
 <?php
 
-final class ArcanistFindBugsLinter extends ArcanistLinter {
+final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
 
     public function getLinterName() {
         return 'findbugs';
@@ -10,24 +10,56 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
         return 'findbugs';
     }
 
-    final public function lintPath($path) {
-    }
-
-    final public function willLintPaths(array $paths) {
-        $result = exec_manual($this->buildCommand($paths));
-        $messages = $this->parseLinterOutput($paths, $result[0], $result[1], $result[2]);
-
-        foreach ($messages as $message) {
-            $this->addLintMessage($message);
-        }
-        return $messages;
-    }
-
     public function getMandatoryFlags() {
         return array(
             'compile',
-            'findbugs:findbugs'
+            'compiler:testCompile',
+            'findbugs:findbugs',
+            '-Dfindbugs.includeTests=true'
         );
+    }
+
+    protected function extractRelativeFilePath($path) {
+        $srcPaths = array(
+            'src/main/java',
+            'src/test/java'
+        );
+
+        foreach ($srcPaths as $prefix) {
+            $idx = strpos($path, $prefix);
+            if ($idx !== false) {
+                $relative_path = substr($path, $idx + strlen($prefix));
+                if (0 === strpos($relative_path, '/')) {
+                    $relative_path = substr($relative_path, 1);
+                }
+
+                return $relative_path;
+            }
+        }
+    }
+
+    protected function getPathsArgumentForLinter($paths) {
+        $classNames = array();
+        foreach ($paths as $path) {
+            $relativePath = $this->extractRelativeFilePath($path);
+            $class = str_replace('/', '.', preg_replace('/\.java$/', '', $relativePath));
+            $classNames[] = $class;
+            /*
+             * Let the hackish begin...
+             *
+             * We also want to analyze inner classes. Findbugs has no support
+             * to do this directly, it can either get a specific class, or
+             * a package. And we have no idea by the path of what inner
+             * classes there may be... So we abuse the source!
+             *  https://code.google.com/p/findbugs/source/browse/findbugs/src/java/edu/umd/cs/findbugs/ClassScreener.java?name=master
+             * Since the incoming param is not strictly quoted,
+             * we can use SOME RegExp expressions, and that's exactly what
+             * we do here!
+            */
+            $classNames[] = $class . '\\$\\\\S+';
+        }
+        $classes = implode(',', $classNames);
+        return sprintf('-Dfindbugs.onlyAnalyze="%s"', $classes);
     }
 
     public function getDefaultFlags() {
@@ -124,13 +156,6 @@ final class ArcanistFindBugsLinter extends ArcanistLinter {
         } else {
             return ArcanistLintSeverity::SEVERITY_ERROR;
         }
-    }
-
-    protected function buildCommand($paths) {
-        $binary = $this->getDefaultBinary();
-        $mandatoryArgs = $this->getMandatoryFlags();
-        $defaultArgs = $this->getDefaultFlags();
-        return (string) csprintf('%C %LR %LR', $binary, $mandatoryArgs, $defaultArgs);
     }
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
