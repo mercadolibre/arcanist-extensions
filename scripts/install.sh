@@ -109,7 +109,7 @@ function install_posix() {
 
     sudo mkdir -p "$REPO_TARGET_PATH"
     sudo chown -R "$USER" "$REPO_TARGET_PATH"
-    
+
     clone_repo;
     checkout "$1";
 
@@ -138,8 +138,8 @@ function remove_posix() {
 function main() {
     parse_options $@;
     shift $((OPTIND - 1));
-   
-    CMD=${1:-"install"}; 
+
+    CMD=${1:-"install"};
     TAG=${2:-"stable"};
 
     INSTALL_PATH=${INSTALL_PATH:-$DEFAULT_INSTALL_PATH};
@@ -148,7 +148,7 @@ function main() {
     TARGET_PATH=${TARGET_PATH:-$DEFAULT_TARGET_PATH};
     REPO_TARGET_PATH="$(dirname "$TARGET_PATH")/.$(basename "$TARGET_PATH")";
     SCRIPT_PATH="/usr/bin/arclintstaller"
-    
+
     case "$CMD" in
         "install")
             install_posix $TAG;

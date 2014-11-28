@@ -3,7 +3,7 @@ exclude: 'plugins/**'
 
 linters:
   BorderZero:
-    enabled: true 
+    enabled: true
 
   CapitalizationInSelector:
     enabled: true
