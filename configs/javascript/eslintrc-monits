@@ -14,8 +14,9 @@
         "valid-jsdoc": 0,
         "no-func-assign": 0,
         "no-extra-parens": 0,
+        "one-var": 0,
 
-        "one-var": 1,
+        "no-mixed-requires": [1, true],
         "quotes": [1, "single", "avoid-escape"],
         "no-wrap-func": 1,
         "no-new-object": 1,
