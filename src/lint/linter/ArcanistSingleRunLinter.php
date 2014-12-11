@@ -28,8 +28,8 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
 
     final protected function buildCommand($paths) {
         $binary = $this->getDefaultBinary();
-        $args = implode(' ', $this->getMandatoryFlags());
-        $args = $args . implode(' ', $this->getDefaultFlags());
+        $args = implode(' ', array_merge(
+            $this->getMandatoryFlags(), $this->getDefaultFlags()));
         $paths = $this->getPathsArgumentForLinter($paths);
         return "$binary $args $paths";
     }
