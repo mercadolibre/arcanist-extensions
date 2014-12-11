@@ -7,8 +7,8 @@ final class MavenUnitTestEngine extends ArcanistUnitTestEngine {
 
     final protected function buildCommand($paths) {
         $binary = $this->getDefaultBinary();
-        $args = implode(' ', $this->getMandatoryFlags());
-        $args = $args . implode(' ', $this->getDefaultFlags());
+        $args = implode(' ', array_merge(
+            $this->getMandatoryFlags(), $this->getDefaultFlags()));
         $paths = implode(' ', $paths);
         return "$binary $args $paths";
     }
@@ -64,7 +64,8 @@ final class MavenUnitTestEngine extends ArcanistUnitTestEngine {
     }
 
     public function getDefaultFlags() {
-        return array();
+        $config = $this->getConfigurationManager();
+        return $config->getConfigFromAnySource('unit.maven.options', array());
     }
 
     public function run() {
