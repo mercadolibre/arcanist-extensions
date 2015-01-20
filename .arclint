@@ -4,7 +4,8 @@
             "type": "json",
             "include": [
                 "(^\\.arcconfig$)",
-                "(^\\.arclint$)"
+                "(^\\.arclint$)",
+                "(configs/javascript/eslint.*)"
             ]
         },
         "chmod": {

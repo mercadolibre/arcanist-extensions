@@ -39,7 +39,7 @@
         "no-constant-condition": 1,
         "space-unary-ops": [1, { "words": true, "nonwords": false }],
         "space-before-blocks": [1, "always"],
-        "spaced-line-comment": ["always", { exceptions: ["-", "#"]}],
+        "spaced-line-comment": ["always", { "exceptions": ["-", "#"]}],
         "no-multi-spaces": 1,
         "vars-on-top": 1,
         "no-extra-bind": 1,
