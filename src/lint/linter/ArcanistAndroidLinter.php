@@ -38,6 +38,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @group linter
  */
 final class ArcanistAndroidLinter extends ArcanistLinter {
+    private $_gradleModules;
 
     public function getDefaultBinary() {
         $ANDROID_HOME = getenv('ANDROID_HOME');
@@ -62,6 +63,36 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
         return trim($stdout);
     }
 
+    private function getGradlePath() {
+        $gradle_bin = "gradle";
+
+        list($err, $stdout) = exec_manual('which %s', $gradle_bin);
+        if ($err) {
+            throw new ArcanistUsageException("Gradle does not appear to be "
+                .'available on the path.');
+        }
+
+        return trim($stdout);
+    }
+
+    public function getLinterConfigurationOptions() {
+        $options = parent::getLinterConfigurationOptions();
+
+        $options['gradle-modules'] = array(
+            'type' => 'optional list<string>',
+            'help' => 'An optional list of the name of the gradle modules'
+                . ' to be analyzed. This is needed only if you are using a'
+                . ' Gradle project.'
+        );
+
+        return $options;
+    }
+
+    public function setLinterConfigurationValue($key, $value) {
+        if ($key === 'gradle-modules') {
+            $this->_gradleModules = $value;
+        }
+    }
 
     private function constructPaths($paths) {
         $fullPaths = array();
@@ -85,7 +116,34 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
                 . "command:\n" . $stdout . "\n\n" . $stderr);
         }
 
-        return $arc_lint_location;
+        return array($arc_lint_location);
+    }
+
+    /*
+     * When using Gradle we lint the whole project,
+     * we can't specify just a few files
+    */
+    private function runGradle($paths) {
+        $project_root = $this->getEngine()->getWorkingCopy()->getProjectRoot();
+        $gradle_bin = join('/', array($project_root, "gradlew"));
+        if (!file_exists($gradle_bin)) {
+            $gradle_bin = $this->getGradlePath();
+        }
+        $cwd = getcwd();
+        chdir($project_root);
+        $lint_command = '';
+        $output_paths = array();
+        foreach ($this->_gradleModules as $module) {
+            $lint_command .= ':' . $module . ':lint ';
+            $output_paths[] = $project_root . '/' . $module
+                . '/build/outputs/lint-results.xml';
+        }
+        list($err) = exec_manual($gradle_bin . ' ' . $lint_command);
+        chdir($cwd);
+        if ($err) {
+            throw new ArcanistUsageException("Error executing gradle command");
+        }
+        return $output_paths;
     }
 
     public function willLintPaths(array $paths) {
@@ -111,7 +169,6 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
     protected function shouldLintDirectories() {
         return true;
     }
-
 
     protected function parseOutputXML($filexml) {
         $messages = array();
@@ -148,13 +205,6 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
                     ArcanistLintSeverity::SEVERITY_ADVICE);
             }
 
-            // Ignore gradle subprojects
-            if ((string)$issue_attrs->id == 'LintError') {
-                $message->setSeverity(
-                    ArcanistLintSeverity::SEVERITY_ADVICE);
-            }
-
-
             $messages[] = $message;
         }
 
@@ -167,38 +217,39 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
 
     public function lintPaths($paths) {
         $lint_bin = $this->getLintPath();
-        $lint_lib_path = dirname($lint_bin) . '/lib';
 
-        $_java_options = getenv('_JAVA_OPTIONS');
-        putenv('_JAVA_OPTIONS=-Djava.awt.headless=true');
-
-        $arc_lint_location = $this->runLint($paths);
-        $contents = file_get_contents($arc_lint_location);
-
-        if (!$contents) {
-            throw new ArcanistUsageException('The linter returned an empty '
-            . 'response. This usually means something went wrong. Aborting.');
+        if (!empty($this->_gradleModules)) {
+            $arc_lint_locations = $this->runGradle($paths);
+        } else {
+            $arc_lint_locations = $this->runLint($paths);
         }
+        foreach ($arc_lint_locations as $arc_lint_location) {
+            $contents = file_get_contents($arc_lint_location);
 
-        $filexml = simplexml_load_string($contents);
+            if (!$contents) {
+                throw new ArcanistUsageException('The linter returned an empty'
+                . ' response. This usually means something went wrong.'
+                . ' Aborting.');
+            }
 
-        if ($filexml->attributes()->format < 4) {
-            throw new ArcanistUsageException("Unsupported Android lint output "
-            . "version. Please update your Android SDK to the latest "
-            . "version.");
-        } else if ($filexml->attributes()->format > 4) {
-            throw new ArcanistUsageException("Unsupported Android lint output "
-            . "version. Arc Lint needs an update to match.");
+            $filexml = simplexml_load_string($contents);
+
+            if ($filexml->attributes()->format < 4) {
+                throw new ArcanistUsageException('Unsupported Android lint'
+                . ' output version. Please update your Android SDK to the'
+                . ' latest version.');
+            } else if ($filexml->attributes()->format > 4) {
+                throw new ArcanistUsageException('Unsupported Android lint'
+                . ' output version. Arc Lint needs an update to match.');
+            }
+
+            $messages = $this->parseOutputXML($filexml);
+
+            foreach ($messages as $message) {
+                $this->addLintMessage($message);
+            }
+
+            unlink($arc_lint_location);
         }
-
-        $messages = $this->parseOutputXML($filexml);
-
-        foreach ($messages as $message) {
-            $this->addLintMessage($message);
-        }
-
-
-        unlink($arc_lint_location);
-        putenv("_JAVA_OPTIONS=$_java_options");
     }
 }
