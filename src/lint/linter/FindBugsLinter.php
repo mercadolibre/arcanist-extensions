@@ -1,6 +1,7 @@
 <?php
 
-final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
+class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
+    protected $_findbugsXmlRegEx = '/^.+target\/findbugsXml\.xml$/i';
 
     public function getLinterName() {
         return 'findbugs';
@@ -78,7 +79,7 @@ final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
        $base = getcwd();
        $Directory = new RecursiveDirectoryIterator($base);
        $Iterator = new RecursiveIteratorIterator($Directory);
-       $Regex = new RegexIterator($Iterator, '/^.+target\/findbugsXml\.xml$/i',
+       $Regex = new RegexIterator($Iterator, $this->_findbugsXmlRegEx,
            RecursiveRegexIterator::GET_MATCH);
        $matches = iterator_to_array($Regex);
        $files = array();
