@@ -26,7 +26,7 @@ class PmdLinter extends ArcanistSingleRunLinter {
 
     public function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
-        return $config->getConfigFromAnySource('lint.pmd.bin', 'mvn');
+        return $config->getConfigFromAnySource('bin.maven', 'mvn');
     }
 
     protected function getPathsArgumentForLinter($paths) {
