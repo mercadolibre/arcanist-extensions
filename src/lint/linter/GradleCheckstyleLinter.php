@@ -37,7 +37,7 @@ final class GradleCheckstyleLinter extends ArcanistCheckstyleLinter {
 
   public function getDefaultBinary() {
     $config = $this->getEngine()->getConfigurationManager();
-    return $config->getConfigFromAnySource('lint.checkstyle.bin', 'gradle');
+    return $config->getConfigFromAnySource('bin.gradle', 'gradle');
   }
 
   protected function buildOutputPaths() {

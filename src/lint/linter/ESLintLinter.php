@@ -4,7 +4,7 @@ final class ArcanistESLintLinter extends ConfigPathLinter {
 
     public function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
-        return $config->getConfigFromAnySource('lint.eslint.bin', 'eslint');
+        return $config->getConfigFromAnySource('bin.eslint', 'eslint');
     }
 
     public function getMandatoryFlags() {

@@ -31,6 +31,6 @@ final class ArcanistGradleFindBugsLinter extends ArcanistFindBugsLinter {
 
     public function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
-        return $config->getConfigFromAnySource('lint.findbugs.bin', 'gradle');
+        return $config->getConfigFromAnySource('bin.gradle', 'gradle');
     }
 }

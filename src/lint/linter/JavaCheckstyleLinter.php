@@ -66,7 +66,7 @@ class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
 
   public function getDefaultBinary() {
     $config = $this->getEngine()->getConfigurationManager();
-    return $config->getConfigFromAnySource('lint.checkstyle.bin', 'mvn');
+    return $config->getConfigFromAnySource('bin.maven', 'mvn');
   }
 
   public function getVersion() {
