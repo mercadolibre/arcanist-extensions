@@ -180,7 +180,7 @@ class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
         $reports = $this->findFindBugsXmlFiles();
         foreach ($reports as $report) {
             $newMessages = $this->parseReport($report, $paths);
-            $messages += $newMessages;
+            $messages = array_merge($messages, $newMessages);
         }
         return $messages;
     }

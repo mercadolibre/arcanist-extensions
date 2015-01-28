@@ -64,11 +64,11 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
     }
 
     private function getGradlePath() {
-        $gradle_bin = "gradle";
+        $gradle_bin = 'gradle';
 
         list($err, $stdout) = exec_manual('which %s', $gradle_bin);
         if ($err) {
-            throw new ArcanistUsageException("Gradle does not appear to be "
+            throw new ArcanistUsageException('Gradle does not appear to be '
                 .'available on the path.');
         }
 
@@ -108,11 +108,11 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
 
         $fullPaths = $this->constructPaths($paths);
         $cmd = (string) csprintf(
-            "%C --showall --nolines --fullpath --quiet --xml %s %Ls",
+            '%C --showall --nolines --fullpath --quiet --xml %s %Ls',
             $lint_bin, $arc_lint_location, $fullPaths);
         list($err, $stdout, $stderr) = exec_manual($cmd);
         if ($err != 0 && $err != 1) {
-            throw new ArcanistUsageException("Error executing lint "
+            throw new ArcanistUsageException('Error executing lint '
                 . "command:\n" . $stdout . "\n\n" . $stderr);
         }
 
@@ -125,7 +125,7 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
     */
     private function runGradle($paths) {
         $project_root = $this->getEngine()->getWorkingCopy()->getProjectRoot();
-        $gradle_bin = join('/', array($project_root, "gradlew"));
+        $gradle_bin = join('/', array($project_root, 'gradlew'));
         if (!file_exists($gradle_bin)) {
             $gradle_bin = $this->getGradlePath();
         }
@@ -141,7 +141,7 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
         list($err) = exec_manual($gradle_bin . ' ' . $lint_command);
         chdir($cwd);
         if ($err) {
-            throw new ArcanistUsageException("Error executing gradle command");
+            throw new ArcanistUsageException('Error executing gradle command');
         }
         return $output_paths;
     }

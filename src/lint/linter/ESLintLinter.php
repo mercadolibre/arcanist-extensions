@@ -55,7 +55,7 @@ final class ArcanistESLintLinter extends ConfigPathLinter {
                 }
 
                 $severity = $child->getAttribute('severity');
-                if ($severity == 'error') {
+                if ($severity === 'error') {
                     $prefix = 'E';
                 } else {
                     $prefix = 'W';
