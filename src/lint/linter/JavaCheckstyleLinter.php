@@ -1,10 +1,10 @@
 <?php
 
-final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
+class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
 
   private $_srcPaths;
   private $_aggregate = true;
-  private $outputPath = '';
+  private $outputPaths = '';
 
 
   public function getLinterName() {
@@ -35,9 +35,9 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
   }
 
   public function setLinterConfigurationValue($key, $value) {
-    if ($key == "paths") {
+    if ($key === 'paths') {
       $this->_srcPaths = $value;
-    } else if ($key == "aggregate") {
+    } else if ($key === 'aggregate') {
       $this->_aggregate = (bool) $value;
     }
   }
@@ -45,11 +45,13 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
   public function getMandatoryFlags() {
     $target = $this->_aggregate ?
         'checkstyle:checkstyle-aggregate' : 'checkstyle:checkstyle';
-    $temp_file = $this->buildOutputPath();
+    $outputPaths = $this->buildOutputPaths();
+    $singleFileTarget = $outputPaths[0];
+
     return array(
       $target,
       '-Dcheckstyle.resourceIncludes=""',
-      "-Dcheckstyle.output.file=$temp_file"
+      "-Dcheckstyle.output.file=$singleFileTarget"
     );
   }
 
@@ -64,7 +66,7 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
 
   public function getDefaultBinary() {
     $config = $this->getEngine()->getConfigurationManager();
-    return $config->getConfigFromAnySource('lint.checkstyle.bin', 'mvn');
+    return $config->getConfigFromAnySource('bin.maven', 'mvn');
   }
 
   public function getVersion() {
@@ -76,7 +78,6 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
   }
 
   protected function extractRelativeFilePath($path) {
-
     if (!$this->_srcPaths) {
       $this->_srcPaths = array(
         'src/main/java',
@@ -98,68 +99,71 @@ final class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
     }
   }
 
-  protected function buildOutputPath() {
-    if (!$this->outputPath) {
-        $this->outputPath = tempnam(sys_get_temp_dir(), 'checkstyle-');
+  protected function buildOutputPaths() {
+    if (!$this->outputPaths) {
+        $this->outputPaths = array(tempnam(sys_get_temp_dir(), 'checkstyle-'));
     }
-    return $this->outputPath;
+    return $this->outputPaths;
   }
 
   protected function getPathsArgumentForLinter($paths) {
-      $absolutePaths = array();
-      foreach ($paths as $path) {
-          $absolutePaths[] = $this->extractRelativeFilePath($path);
-      }
-      $path = implode(',', $absolutePaths);
-      return sprintf('-Dcheckstyle.includes="%s"', $path);
+    $absolutePaths = array();
+    foreach ($paths as $path) {
+      $absolutePaths[] = $this->extractRelativeFilePath($path);
+    }
+    $path = implode(',', $absolutePaths);
+    return sprintf('-Dcheckstyle.includes="%s"', $path);
   }
 
   protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
+    $checkstyleFiles = $this->buildOutputPaths();
+    $messages = array();
 
-    $report_dom = new DOMDocument();
-    $tmp_file = $this->buildOutputPath();
-    $content = file_get_contents($tmp_file);
-    unlink($tmp_file);
+    foreach ($checkstyleFiles as $file) {
+      $report_dom = new DOMDocument();
+      $content = file_get_contents($file);
+      unlink($file);
 
-    if (!$content) {
-        throw new ArcanistUsageException('Maven failed to lint this project.'
-            . ' Reason:' . PHP_EOL . $stdout);
-    }
+      if (!$content) {
+        throw new ArcanistUsageException(
+            'Checkstyle failed to lint this project. Reason:'
+            . PHP_EOL . $stdout);
+      }
 
-    $ok = $report_dom->loadXML($content);
-    if (!$ok) {
+      $ok = $report_dom->loadXML($content);
+      if (!$ok) {
         throw new ArcanistUsageException('Arcanist could not load the linter'
             . ' output. Either the linter failed to produce a meaningful'
             . ' response or failed to write the file.');
-    }
+      }
 
-    $files = $report_dom->getElementsByTagName('file');
-    $messages = array();
-    foreach ($files as $file) {
-      foreach ($file->childNodes as $child) {
-        if (!($child instanceof DOMElement)) {
-          continue;
+      $files = $report_dom->getElementsByTagName('file');
+      foreach ($files as $file) {
+        foreach ($file->childNodes as $child) {
+          if (!($child instanceof DOMElement)) {
+            continue;
+          }
+
+          $severity = $child->getAttribute('severity');
+          if ($severity === 'error') {
+            $prefix = 'E';
+          } else {
+            $prefix = 'W';
+          }
+
+          $code = 'CS.'.$prefix.'.'.$child->getAttribute('source');
+          $path = $file->getAttribute('name');
+
+          $message = new ArcanistLintMessage();
+          $message->setPath($path);
+          $message->setLine($child->getAttribute('line'));
+          $message->setChar($child->getAttribute('column'));
+          $message->setCode($code);
+          $message->setDescription($child->getAttribute('message'));
+          $message->setSeverity($this->getLintMessageSeverity($code));
+
+          $messages[] = $message;
         }
-
-        $severity = $child->getAttribute('severity');
-        if ($severity == 'error') {
-          $prefix = 'E';
-        } else {
-          $prefix = 'W';
-        }
-
-        $code = 'CS.'.$prefix.'.'.$child->getAttribute('source');
-        $path = $file->getAttribute('name');
-
-        $message = new ArcanistLintMessage();
-        $message->setPath($path);
-        $message->setLine($child->getAttribute('line'));
-        $message->setChar($child->getAttribute('column'));
-        $message->setCode($code);
-        $message->setDescription($child->getAttribute('message'));
-        $message->setSeverity($this->getLintMessageSeverity($code));
-
-        $messages[] = $message;
       }
     }
 

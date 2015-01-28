@@ -4,7 +4,7 @@ final class ArcanistSassLinter extends ConfigPathLinter {
 
     public function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
-        return $config->getConfigFromAnySource('lint.sass.bin', 'scss-lint');
+        return $config->getConfigFromAnySource('bin.sass', 'scss-lint');
     }
 
     public function getMandatoryFlags() {

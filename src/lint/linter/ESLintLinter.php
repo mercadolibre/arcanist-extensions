@@ -4,7 +4,7 @@ final class ArcanistESLintLinter extends ConfigPathLinter {
 
     public function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
-        return $config->getConfigFromAnySource('lint.eslint.bin', 'eslint');
+        return $config->getConfigFromAnySource('bin.eslint', 'eslint');
     }
 
     public function getMandatoryFlags() {
@@ -55,7 +55,7 @@ final class ArcanistESLintLinter extends ConfigPathLinter {
                 }
 
                 $severity = $child->getAttribute('severity');
-                if ($severity == 'error') {
+                if ($severity === 'error') {
                     $prefix = 'E';
                 } else {
                     $prefix = 'W';

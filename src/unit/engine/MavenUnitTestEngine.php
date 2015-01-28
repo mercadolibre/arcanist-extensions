@@ -56,7 +56,7 @@ final class MavenUnitTestEngine extends ArcanistUnitTestEngine {
 
     public function getDefaultBinary() {
         $config = $this->getConfigurationManager();
-        return $config->getConfigFromAnySource('unit.maven.bin', 'mvn');
+        return $config->getConfigFromAnySource('bin.maven', 'mvn');
     }
 
     public function getMandatoryFlags() {

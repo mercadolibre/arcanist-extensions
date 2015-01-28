@@ -1,6 +1,7 @@
 <?php
 
-final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
+class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
+    protected $_findbugsXmlRegEx = '/^.+target\/findbugsXml\.xml$/i';
 
     public function getLinterName() {
         return 'findbugs';
@@ -71,14 +72,14 @@ final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
 
     public function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
-        return $config->getConfigFromAnySource('lint.findbugs.bin', 'mvn');
+        return $config->getConfigFromAnySource('bin.maven', 'mvn');
     }
 
     protected function findFindBugsXmlFiles() {
        $base = getcwd();
        $Directory = new RecursiveDirectoryIterator($base);
        $Iterator = new RecursiveIteratorIterator($Directory);
-       $Regex = new RegexIterator($Iterator, '/^.+target\/findbugsXml\.xml$/i',
+       $Regex = new RegexIterator($Iterator, $this->_findbugsXmlRegEx,
            RecursiveRegexIterator::GET_MATCH);
        $matches = iterator_to_array($Regex);
        $files = array();
@@ -179,7 +180,7 @@ final class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
         $reports = $this->findFindBugsXmlFiles();
         foreach ($reports as $report) {
             $newMessages = $this->parseReport($report, $paths);
-            $messages += $newMessages;
+            $messages = array_merge($messages, $newMessages);
         }
         return $messages;
     }
