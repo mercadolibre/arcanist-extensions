@@ -110,8 +110,10 @@ class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
                 . ' linter output. Aborting.');
         }
 
+        $directory = new RecursiveDirectoryIterator(getcwd());
+        $iterator = new RecursiveIteratorIterator($directory);
+
         $bugs = $report_dom->getElementsByTagName('BugInstance');
-        $base = $report_dom->getElementsByTagName('SrcDir')->item(0)->nodeValue;
 
         $messages = array();
         foreach ($bugs as $bug) {
@@ -130,9 +132,17 @@ class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
 
             $code = 'FB.'.$prefix.'.'.$bug->getAttribute('type');
 
-            $message = new ArcanistLintMessage();
+            // File can be in any of the analyzed folders...
             $sourcePath = $sourceline->getAttribute('sourcepath');
-            $message->setPath($base . '/' . $sourcePath);
+            $fileRegex = '/^.+'.preg_quote($sourcePath, '/').'$/';
+            $regex = new RegexIterator($iterator, $fileRegex,
+                RecursiveRegexIterator::GET_MATCH);
+            foreach ($regex as $match) {
+                $filePath = $match[0];
+            }
+
+            $message = new ArcanistLintMessage();
+            $message->setPath($filePath);
             $message->setCode($code);
             $message->setDescription($description);
             $message->setSeverity($this->getLintMessageSeverity($code));
@@ -143,21 +153,14 @@ class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
                 $message->setLine(intval($line));
             }
 
-            // skip files not in diff/changed
-            $curPath = $sourceline->getAttribute('sourcepath');
-            foreach ($files as $file) {
-                if (!strcmp(realpath($file),
-                        realpath($base . '/' . $curPath))) {
-                    $messages[] = $message;
-                }
-            }
+            $messages[] = $message;
         }
 
         return $messages;
     }
 
     protected function getDefaultMessageSeverity($code) {
-        if (substr($code, 5) == "FB.W.") {
+        if (substr($code, 5) === 'FB.W.') {
             return ArcanistLintSeverity::SEVERITY_WARNING;
         } else {
             return ArcanistLintSeverity::SEVERITY_ERROR;
