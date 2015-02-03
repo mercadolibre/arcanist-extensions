@@ -85,7 +85,7 @@ class PmdLinter extends ArcanistSingleRunLinter {
             $duplicateFile = $files->item(1);
             $sourcePath = $originalFile->getAttribute('path');
 
-            $description = sprintf('%d lines of core repetead at %s line %d',
+            $description = sprintf('%d lines of code repetead at %s line %d',
                 $duplicate->getAttribute('lines'),
                 $duplicateFile->getAttribute('path'),
                 $duplicateFile->getAttribute('line'));
