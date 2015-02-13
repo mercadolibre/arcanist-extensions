@@ -33,4 +33,16 @@ final class ArcanistGradleFindBugsLinter extends ArcanistFindBugsLinter {
         $config = $this->getEngine()->getConfigurationManager();
         return $config->getConfigFromAnySource('bin.gradle', 'gradle');
     }
+
+    protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
+        $messages = parent::parseLinterOutput($paths, $err, $stdout, $stderr);
+
+        // Change the deprecation error message
+
+        // If you are hackish and you know it clap your hands!
+        $messages[0]->setDescription('This linter is deprecated, switch to the'
+            . ' new "gradle" linter using the "findbugs" provider.');
+
+        return $messages;
+    }
 }
