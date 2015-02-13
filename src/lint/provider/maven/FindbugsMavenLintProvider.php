@@ -6,7 +6,7 @@ class FindbugsMavenLintProvider implements MavenLintProvider {
     return 'findbugs';
   }
 
-  public function getMavenTargets() {
+  public function getTargets() {
     return array(
       'compile',
       'compiler:testCompile',

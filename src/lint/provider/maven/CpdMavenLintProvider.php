@@ -1,13 +1,13 @@
 <?php
 
-class PmdMavenLintProvider implements MavenLintProvider {
+class CpdMavenLintProvider implements MavenLintProvider {
 
   public function getName() {
-    return 'pmd';
+    return 'cpd';
   }
 
-  public function getMavenTargets() {
-    return array('pmd:pmd');
+  public function getTargets() {
+    return array('pmd:cpd');
   }
 
   public function getAdditionalFlags() {
@@ -19,7 +19,7 @@ class PmdMavenLintProvider implements MavenLintProvider {
   }
 
   public function parseLinterOutput(array $paths) {
-    $parser = new PmdParser();
-    return $parser->parseAll('/target\/pmd\.xml$/i', $paths);
+    $parser = new CpdParser();
+    return $parser->parseAll('/target\/cpd\.xml$/i', $paths);
   }
 }

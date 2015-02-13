@@ -6,7 +6,7 @@ class CheckstyleMavenLintProvider implements MavenLintProvider {
     return 'checkstyle';
   }
 
-  public function getMavenTargets() {
+  public function getTargets() {
     return array('checkstyle:checkstyle');
   }
 
