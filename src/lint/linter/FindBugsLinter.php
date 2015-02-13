@@ -170,6 +170,14 @@ class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
         $messages = array();
 
+        // This linter is deprecated, warn the user
+        $message = new ArcanistLintMessage();
+        $message->setCode('FB.DEPRECATED');
+        $message->setDescription('This linter is deprecated, switch to the'
+            . ' new "maven" linter using the "findbugs" provider.');
+        $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+        $messages[] = $message;
+
         if ($err) {
             $message = new ArcanistLintMessage();
             $message->setCode('MVN.COMPILE');
