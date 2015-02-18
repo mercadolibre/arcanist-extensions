@@ -8,6 +8,9 @@
                 "(configs/javascript/eslint.*)"
             ]
         },
+        "generated": {
+            "type": "generated"
+        },
         "chmod": {
             "type": "chmod"
         },

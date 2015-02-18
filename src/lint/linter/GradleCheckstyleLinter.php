@@ -63,4 +63,16 @@ final class GradleCheckstyleLinter extends ArcanistCheckstyleLinter {
   protected function getPathsArgumentForLinter($paths) {
     return '';
   }
+
+  protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
+    $messages = parent::parseLinterOutput($paths, $err, $stdout, $stderr);
+
+    // Change the deprecation error message
+
+    // If you are hackish and you know it clap your hands!
+    $messages[0]->setDescription('This linter is deprecated, switch to the'
+       . ' new "gradle" linter using the "checkstyle" provider.');
+
+    return $messages;
+  }
 }

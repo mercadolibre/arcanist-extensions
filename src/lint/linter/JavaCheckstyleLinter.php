@@ -119,6 +119,15 @@ class ArcanistCheckstyleLinter extends ArcanistSingleRunLinter {
     $checkstyleFiles = $this->buildOutputPaths();
     $messages = array();
 
+    // This linter is deprecated, warn the user
+    $message = new ArcanistLintMessage();
+    $message->setCode('CS.DEPRECATED');
+    $message->setDescription('This linter is deprecated, switch to the'
+      . ' new "maven" linter using the "checkstyle" provider.');
+    $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+    $messages[] = $message;
+
+
     foreach ($checkstyleFiles as $file) {
       $report_dom = new DOMDocument();
       $content = file_get_contents($file);

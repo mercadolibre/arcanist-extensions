@@ -220,6 +220,15 @@ final class ArcanistAndroidLinter extends ArcanistLinter {
 
         if (!empty($this->_gradleModules)) {
             $arc_lint_locations = $this->runGradle($paths);
+
+            // This linter is deprecated, warn the user
+            $message = new ArcanistLintMessage();
+            $message->setCode('AND.DEPRECATED');
+            $message->setDescription('This linter is deprecated, switch to the'
+                . ' new "gradle" linter using the "android" provider.');
+            $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+
+            $this->addLintMessage($message);
         } else {
             $arc_lint_locations = $this->runLint($paths);
         }

@@ -76,9 +76,10 @@ class PmdLinter extends ArcanistSingleRunLinter {
                 . ' linter output. Aborting.');
         }
 
+        $messages = array();
+
         $duplications = $report_dom->getElementsByTagName('duplication');
 
-        $messages = array();
         foreach ($duplications as $duplicate) {
             $files = $duplicate->getElementsByTagName('file');
             $originalFile = $files->item(0);
@@ -124,9 +125,10 @@ class PmdLinter extends ArcanistSingleRunLinter {
                 . ' linter output. Aborting.');
         }
 
+        $messages = array();
+
         $files = $report_dom->getElementsByTagName('file');
 
-        $messages = array();
         foreach ($files as $file) {
             $violations = $file->getElementsByTagName('violation');
             $sourcePath = $file->getAttribute('name');
@@ -168,6 +170,21 @@ class PmdLinter extends ArcanistSingleRunLinter {
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
         $messages = array();
+
+        // This linter is deprecated, warn the user
+        $message = new ArcanistLintMessage();
+        $message->setCode('PMD.DEPRECATED');
+        $message->setDescription('This linter is deprecated, switch to the'
+            . ' new "maven" linter using the "pmd" provider.');
+        $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+        $messages[] = $message;
+
+        $message = new ArcanistLintMessage();
+        $message->setCode('CPD.DEPRECATED');
+        $message->setDescription('This linter is deprecated, switch to the'
+            . ' new "maven" linter using the "cpd" provider.');
+        $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+        $messages[] = $message;
 
         if ($err) {
             $message = new ArcanistLintMessage();
