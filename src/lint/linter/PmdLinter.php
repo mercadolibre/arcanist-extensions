@@ -78,14 +78,6 @@ class PmdLinter extends ArcanistSingleRunLinter {
 
         $messages = array();
 
-        // This linter is deprecated, warn the user
-        $message = new ArcanistLintMessage();
-        $message->setCode('CPD.DEPRECATED');
-        $message->setDescription('This linter is deprecated, switch to the'
-            . ' new "maven" linter using the "cpd" provider.');
-        $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
-        $messages[] = $message;
-
         $duplications = $report_dom->getElementsByTagName('duplication');
 
         foreach ($duplications as $duplicate) {
@@ -135,14 +127,6 @@ class PmdLinter extends ArcanistSingleRunLinter {
 
         $messages = array();
 
-        // This linter is deprecated, warn the user
-        $message = new ArcanistLintMessage();
-        $message->setCode('PMD.DEPRECATED');
-        $message->setDescription('This linter is deprecated, switch to the'
-            . ' new "maven" linter using the "pmd" provider.');
-        $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
-        $messages[] = $message;
-
         $files = $report_dom->getElementsByTagName('file');
 
         foreach ($files as $file) {
@@ -186,6 +170,21 @@ class PmdLinter extends ArcanistSingleRunLinter {
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
         $messages = array();
+
+        // This linter is deprecated, warn the user
+        $message = new ArcanistLintMessage();
+        $message->setCode('PMD.DEPRECATED');
+        $message->setDescription('This linter is deprecated, switch to the'
+            . ' new "maven" linter using the "pmd" provider.');
+        $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+        $messages[] = $message;
+
+        $message = new ArcanistLintMessage();
+        $message->setCode('CPD.DEPRECATED');
+        $message->setDescription('This linter is deprecated, switch to the'
+            . ' new "maven" linter using the "cpd" provider.');
+        $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+        $messages[] = $message;
 
         if ($err) {
             $message = new ArcanistLintMessage();
