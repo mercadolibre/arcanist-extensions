@@ -27,4 +27,11 @@ class GradleLinter extends AbstractMetaLinter {
   protected function getPathsArgumentForLinter($paths) {
     return '';
   }
+
+  public function getMandatoryFlags() {
+    $flags = parent::getMandatoryFlags();
+    $flags[] = '--daemon';
+
+    return array_unique($flags); // just in case a provider set it (shouldn't)
+  }
 }
