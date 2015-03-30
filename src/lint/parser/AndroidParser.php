@@ -41,10 +41,10 @@ class AndroidParser extends AbstractFileParser {
         $issue_attrs->message));
 
       // Setting Severity
-      if ($issue_attrs->severity === 'Error'
-          || $issue_attrs->severity === 'Fatal') {
+      if ($issue_attrs->severity->__toString() === 'Error'
+          || $issue_attrs->severity->__toString() === 'Fatal') {
         $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
-      } else if ($issue_attrs->severity === 'Warning') {
+      } else if ($issue_attrs->severity->__toString() === 'Warning') {
         $message->setSeverity(ArcanistLintSeverity::SEVERITY_WARNING);
       } else {
         $message->setSeverity(ArcanistLintSeverity::SEVERITY_ADVICE);
