@@ -85,9 +85,6 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
         return $config->getConfigFromAnySource('lint.oclint.options', array());
     }
 
-    final public function lintPath($path) {
-    }
-
     final public function willLintPaths(array $paths) {
 
         $working_copy = $this->getEngine()->getWorkingCopy();
@@ -111,18 +108,16 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
         }
     }
 
+    final public function lintPath($path) {
+        // older versions of arc get angry at me if this method isn't defined.
+    }
+
     final protected function buildCommand($paths) {
         $binary = $this->getDefaultBinary();
         $args = implode(' ', $this->getMandatoryFlags());
         $args = $args . implode(' ', $this->getDefaultFlags());
         $paths = $this->getPathsArgumentForLinter($paths);
         return "$binary $args $paths";
-    }
-
-    final public function didRunLinters() {
-        foreach ($this->paths as $path) {
-            $this->willLintPath($path);
-        }
     }
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {

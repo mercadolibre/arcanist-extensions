@@ -3,6 +3,8 @@
 abstract class ArcanistSingleRunLinter extends ArcanistLinter {
 
     final public function lintPath($path) {
+        // We implement this one to stop any subclasses from doing individual ops
+        // This is a single run linter after all.
     }
 
     final public function willLintPaths(array $paths) {
@@ -17,6 +19,9 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
         foreach ($messages as $message) {
             $this->addLintMessage($message);
         }
+    }
+
+    final public function didLintPaths(array $paths) {
     }
 
     abstract protected function getPathsArgumentForLinter($path);
@@ -34,11 +39,5 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
         return "$binary $args $paths";
     }
 
-
-    final public function didRunLinters() {
-        foreach ($this->paths as $path) {
-            $this->willLintPath($path);
-        }
-    }
 
 }
