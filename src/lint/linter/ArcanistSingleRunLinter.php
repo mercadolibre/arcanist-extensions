@@ -2,12 +2,25 @@
 
 abstract class ArcanistSingleRunLinter extends ArcanistLinter {
 
+    private $linterDidRun = false;
+
     final public function lintPath($path) {
         // We implement this one to stop any subclasses from doing individual ops
         // This is a single run linter after all.
     }
 
     final public function willLintPaths(array $paths) {
+        // The engine will attempt to run the linter on chunks of paths,
+        // but we will ignore that and run for ALL paths, so we need to
+        // make sure to run just once.
+        if ($this->linterDidRun) {
+            return;
+        }
+        $this->linterDidRun = true;
+
+        // Ignore passed paths, use all paths to be linted by the engine
+        $paths = $this->getPaths();
+
         $working_copy = $this->getEngine()->getWorkingCopy();
         $root = $working_copy->getProjectRoot();
         chdir($root);
