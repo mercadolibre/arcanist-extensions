@@ -44,6 +44,7 @@ phutil_register_library_map(array(
     'PmdLinter' => 'lint/linter/PmdLinter.php',
     'PmdMavenLintProvider' => 'lint/provider/maven/PmdMavenLintProvider.php',
     'PmdParser' => 'lint/parser/PmdParser.php',
+    'RegexpLinter' => 'lint/linter/RegexpLinter.php',
   ),
   'function' => array(),
   'xmap' => array(
@@ -80,5 +81,6 @@ phutil_register_library_map(array(
     'PmdLinter' => 'ArcanistSingleRunLinter',
     'PmdMavenLintProvider' => 'MavenLintProvider',
     'PmdParser' => 'AbstractFileParser',
+    'RegexpLinter' => 'ArcanistLinter',
   ),
 ));

@@ -21,7 +21,11 @@ class GradleLinter extends AbstractMetaLinter {
 
   public function getDefaultBinary() {
     $config = $this->getEngine()->getConfigurationManager();
-    return $config->getConfigFromAnySource('bin.gradle', 'gradle');
+    /*
+     * Single run linters are guaranteed to be run from project root,
+     * so using ./ is ok. See ArcanistSingleRunLinter.
+    */
+    return $config->getConfigFromAnySource('bin.gradle', './gradlew');
   }
 
   protected function getPathsArgumentForLinter($paths) {
