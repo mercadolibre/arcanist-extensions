@@ -1,10 +1,9 @@
 <?php
 
 class FindbugsParser extends AbstractFileParser {
-  protected function parse($file) {
+  protected function parse($content) {
     $messages = array();
     $report_dom = new DOMDocument();
-    $content = file_get_contents($file);
 
     $ok = $report_dom->loadXML($content);
     if (!$ok) {
