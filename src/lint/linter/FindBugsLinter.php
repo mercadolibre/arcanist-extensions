@@ -13,8 +13,7 @@ class ArcanistFindBugsLinter extends ArcanistSingleRunLinter {
 
     public function getMandatoryFlags() {
         return array(
-            'compile',
-            'compiler:testCompile',
+            'test-compile',
             'findbugs:findbugs',
             '-Dfindbugs.includeTests=true'
         );
