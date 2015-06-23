@@ -48,8 +48,8 @@ final class MavenUnitTestEngine extends ArcanistUnitTestEngine {
     }
 
     final protected function parseReport($report) {
-        $this->parser = new ArcanistXUnitTestResultParser();
-        $results = $this->parser->parseTestResults(
+        $parser = new ArcanistXUnitTestResultParser();
+        $results = $parser->parseTestResults(
             Filesystem::readFile($report));
         return $results;
     }
