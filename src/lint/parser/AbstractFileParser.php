@@ -2,10 +2,14 @@
 
 abstract class AbstractFileParser {
 
-  protected abstract function parse($file);
+  protected abstract function parse($content);
 
-  public final function parseOne($file, array $paths) {
-    $messages = $this->parse($file);
+  public final function parsePath($file, array $paths) {
+    return $this->parseContent(file_get_contents($file), $paths);
+  }
+
+  public final function parseContent($content, array $paths) {
+    $messages = $this->parse($content);
 
     /*
      * Filter paths to play nicely with arc lint --lintall
@@ -49,7 +53,7 @@ abstract class AbstractFileParser {
 
     $messages = array();
     foreach ($files as $file) {
-      $messages = array_merge($messages, $this->parseOne($file, $paths));
+      $messages = array_merge($messages, $this->parsePath($file, $paths));
     }
 
     return $messages;

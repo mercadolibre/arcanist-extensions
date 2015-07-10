@@ -1,9 +1,8 @@
 <?php
 
 class AndroidParser extends AbstractFileParser {
-  protected function parse($file) {
+  protected function parse($content) {
     $messages = array();
-    $content = file_get_contents($file);
     $filexml = simplexml_load_string($content);
 
     if ($filexml === false) {
