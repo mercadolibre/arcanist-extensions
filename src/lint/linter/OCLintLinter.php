@@ -135,8 +135,8 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
 
                 $message = new ArcanistLintMessage();
                 $message->setPath($matches['file']);
-                $message->setLine($matches['line']);
-                $message->setChar($matches['col']);
+                $message->setLine(intval($matches['line']));
+                $message->setChar(intval($matches['col']));
                 $message->setCode($matches['error']);
 
                 $message->setSeverity(ArcanistLintSeverity::SEVERITY_WARNING);

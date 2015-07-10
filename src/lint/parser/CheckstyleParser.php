@@ -31,8 +31,8 @@ class CheckstyleParser extends AbstractFileParser {
 
         $message = new ArcanistLintMessage();
         $message->setPath($path);
-        $message->setLine($child->getAttribute('line'));
-        $message->setChar($child->getAttribute('column'));
+        $message->setLine(intval($child->getAttribute('line')));
+        $message->setChar(intval($child->getAttribute('column')));
         $message->setCode($code);
         $message->setDescription($child->getAttribute('message'));
         $message->setSeverity($this->getLintMessageSeverity($code));
