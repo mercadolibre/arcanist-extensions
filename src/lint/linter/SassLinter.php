@@ -61,7 +61,11 @@ final class ArcanistSassLinter extends ConfigPathLinter {
                     $prefix = 'W';
                 }
 
-                $code = 'SASS.'.$prefix.'.'.$child->getAttribute('reason');
+                $rule = $child->getAttribute('linter');
+                $words = preg_split("/(?<=[a-z])(?![a-z])/", $rule, -1, PREG_SPLIT_NO_EMPTY);
+                $name = implode(' ', $words);
+
+                $code = 'SASS.'.$prefix.'.'.$rule;
 
                 $message = new ArcanistLintMessage();
                 $message->setPath($path);
@@ -70,6 +74,7 @@ final class ArcanistSassLinter extends ConfigPathLinter {
                 $message->setCode($code);
                 $message->setDescription($child->getAttribute('reason'));
                 $message->setSeverity($this->getLintMessageSeverity($code));
+                $message->setName($name);
 
                 $messages[] = $message;
             }
