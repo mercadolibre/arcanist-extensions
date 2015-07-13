@@ -122,7 +122,7 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
         $errorRegex = '/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+):'
-            . ' (?<error>.*)/is';
+            . ' (?<name>.*) (?<priority>P[0-9]) (?<desc>.*)/is';
         $messages = array();
 
         if ($stdout === '') {
@@ -132,16 +132,23 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
         foreach (explode("\n", $stdout) as $line) {
             $matches = array();
             if ($c = preg_match($errorRegex, $line, $matches)) {
+                $name = $matches['name'];
+                $words = explode(' ', $name);
+                $completeCode = 'OCLINT.'.strtoupper(implode('_', $words));
+
+                // Trim to 32 just in case, conduit goes boom otherwise
+                $code = substr($completeCode, 0, 32);
 
                 $message = new ArcanistLintMessage();
                 $message->setPath($matches['file']);
                 $message->setLine(intval($matches['line']));
                 $message->setChar(intval($matches['col']));
-                $message->setCode($matches['error']);
+                $message->setCode($code);
+                $message->setName($name);
+                $message->setDescription($matches['desc']);
 
                 $message->setSeverity(ArcanistLintSeverity::SEVERITY_WARNING);
 
-                $message->setName('OCLINT.' . $matches['error']);
 
                 $messages[] = $message;
             }
