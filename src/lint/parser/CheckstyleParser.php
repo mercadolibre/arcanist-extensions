@@ -36,6 +36,7 @@ class CheckstyleParser extends AbstractFileParser {
         $message->setCode($code);
         $message->setDescription($child->getAttribute('message'));
         $message->setSeverity($this->getLintMessageSeverity($code));
+        $message->setName('Checkstyle');
 
         $messages[] = $message;
       }
