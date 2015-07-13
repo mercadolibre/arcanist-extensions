@@ -26,7 +26,11 @@ class CheckstyleParser extends AbstractFileParser {
           $prefix = 'W';
         }
 
-        $code = 'CS.'.$prefix.'.'.$child->getAttribute('source');
+        // This is a java fully-qualified class name
+        $ruleCompleteName = $child->getAttribute('source');
+        $rule = substr(strrchr($ruleCompleteName, '.'), 1);
+        $code = 'CS.'.$prefix.'.'.$rule;
+
         $path = $file->getAttribute('name');
 
         $message = new ArcanistLintMessage();
