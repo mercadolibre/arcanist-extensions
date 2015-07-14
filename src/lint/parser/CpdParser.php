@@ -36,6 +36,7 @@ class CpdParser extends AbstractFileParser {
       $message->setDescription($description);
       $message->setSeverity($this->getLintMessageSeverity($prefix));
       $message->setLine(intval($sourceline));
+      $message->setName("Duplicated code");
 
       $messages[] = $message;
     }

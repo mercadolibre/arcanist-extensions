@@ -21,7 +21,8 @@
             "type": "spelling"
         },
         "text": {
-            "type": "text"
+            "type": "text",
+            "text.max-line-length": 120
         },
         "php": {
             "type": "phutil-library",

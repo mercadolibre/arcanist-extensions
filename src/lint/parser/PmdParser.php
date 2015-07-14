@@ -30,7 +30,11 @@ class PmdParser extends AbstractFileParser {
           $prefix = 'W';
         }
 
-        $code = 'PMD.'.$prefix.'.'.$violation->getAttribute('rule');
+        $rule = $violation->getAttribute('rule');
+        $words = preg_split("/(?<=[a-z])(?![a-z])/", $rule, -1, PREG_SPLIT_NO_EMPTY);
+        $name = implode(' ', $words);
+
+        $code = 'PMD.'.$prefix.'.'.$rule;
 
         $message = new ArcanistLintMessage();
         $message->setPath($sourcePath);
@@ -38,6 +42,7 @@ class PmdParser extends AbstractFileParser {
         $message->setDescription($description);
         $message->setSeverity($this->getLintMessageSeverity($prefix));
         $message->setLine(intval($sourceline));
+        $message->setName($name);
 
         $messages[] = $message;
       }

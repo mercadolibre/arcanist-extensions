@@ -32,7 +32,11 @@ class FindbugsParser extends AbstractFileParser {
         $prefix = 'W';
       }
 
-      $code = 'FB.'.$prefix.'.'.$bug->getAttribute('type');
+      $code = 'FB.'.$prefix.'.'.$bug->getAttribute('category');
+
+      // Go from KIND_OF_ERROR to Kind of error
+      $type = $bug->getAttribute('type');
+      $name = ucfirst(strtolower(str_replace('_', ' ', $type)));
 
       // File can be in any of the analyzed folders...
       $sourcePath = $sourceline->getAttribute('sourcepath');
@@ -48,6 +52,7 @@ class FindbugsParser extends AbstractFileParser {
       $message->setCode($code);
       $message->setDescription($description);
       $message->setSeverity($this->getLintMessageSeverity($code));
+      $message->setName($name);
 
       // do we have a start line?
       $line = $sourceline->getAttribute('start');
