@@ -66,8 +66,7 @@ final class ArcanistESLintLinter extends ConfigPathLinter {
                 $description = $child->getAttribute('message');
                 if (preg_match('/\(([^)]+)\)$/', $description, $messageMatches)) {
                     $rule = $messageMatches[1];
-                    $words = explode('-', $rule);
-                    $name = ucfirst(strtolower(implode(' ', $words)));
+                    $name = ucfirst(strtolower(str_replace('-', ' ', $rule)));
                 } else {
                     $rule = 'Unnamed';
                     $name = 'ESLint';

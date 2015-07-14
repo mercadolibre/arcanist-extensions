@@ -133,8 +133,7 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
             $matches = array();
             if ($c = preg_match($errorRegex, $line, $matches)) {
                 $name = $matches['name'];
-                $words = explode(' ', $name);
-                $completeCode = 'OCLINT.'.strtoupper(implode('_', $words));
+                $completeCode = 'OCLINT.'.strtoupper(str_replace(' ', '_', $name));
 
                 // Trim to 32 just in case, conduit goes boom otherwise
                 $code = substr($completeCode, 0, 32);
