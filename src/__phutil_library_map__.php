@@ -11,6 +11,7 @@ phutil_register_library_map(array(
   'class' => array(
     'AbstractFileParser' => 'lint/parser/AbstractFileParser.php',
     'AbstractMetaLinter' => 'lint/linter/AbstractMetaLinter.php',
+    'AbstractXUnitTestEngine' => 'unit/engine/AbstractXUnitTestEngine.php',
     'AndroidGradleLintProvider' => 'lint/provider/gradle/AndroidGradleLintProvider.php',
     'AndroidParser' => 'lint/parser/AndroidParser.php',
     'ArcanistESLintLinter' => 'lint/linter/ESLintLinter.php',
@@ -44,6 +45,7 @@ phutil_register_library_map(array(
   'function' => array(),
   'xmap' => array(
     'AbstractMetaLinter' => 'ArcanistSingleRunLinter',
+    'AbstractXUnitTestEngine' => 'ArcanistUnitTestEngine',
     'AndroidGradleLintProvider' => 'GradleLintProvider',
     'AndroidParser' => 'AbstractFileParser',
     'ArcanistESLintLinter' => 'ConfigPathLinter',
@@ -63,10 +65,10 @@ phutil_register_library_map(array(
     'FindbugsParser' => 'AbstractFileParser',
     'GradleLintProvider' => 'LintProvider',
     'GradleLinter' => 'AbstractMetaLinter',
-    'GradleUnitTestEngine' => 'ArcanistUnitTestEngine',
+    'GradleUnitTestEngine' => 'AbstractXUnitTestEngine',
     'MavenLintProvider' => 'LintProvider',
     'MavenLinter' => 'AbstractMetaLinter',
-    'MavenUnitTestEngine' => 'ArcanistUnitTestEngine',
+    'MavenUnitTestEngine' => 'AbstractXUnitTestEngine',
     'OCLintLinter' => 'ArcanistSingleRunLinter',
     'PmdGradleLintProvider' => 'GradleLintProvider',
     'PmdMavenLintProvider' => 'MavenLintProvider',
