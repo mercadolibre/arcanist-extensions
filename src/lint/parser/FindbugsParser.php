@@ -22,8 +22,24 @@ class FindbugsParser extends AbstractFileParser {
       $description = $bug->getElementsByTagName('LongMessage');
       $description = $description->item(0);
       $description = $description->nodeValue;
-      $sourcelineList = $bug->getElementsByTagName('SourceLine');
-      $sourceline = $sourcelineList->item($sourcelineList->length - 1);
+
+      if (!$bug->hasChildNodes()) return;
+
+      $children = $bug->childNodes;
+      $sourceline = null;
+      foreach ($children as $child) {
+        if ($child->nodeName == 'SourceLine') {
+          $sourceline = $child;
+          break;
+        }
+      }
+
+      // if we haven't found a sourceline in the buginstance's children
+      // we use the last sourceline in the report.
+      if ($sourceline === null) {
+        $sourcelineList = $bug->getElementsByTagName('SourceLine');
+        $sourceline = $sourcelineList->item($sourcelineList->length - 1);
+      }
 
       $severity = $bug->getAttribute('priority');
       if ($severity >= 5) {

@@ -5,6 +5,8 @@
  */
 final class FilenameRegexpLinter extends ArcanistLinter {
 
+  const LINT_INVALID_NAME = 1;
+
   private $regexp = null;
 
   public function getInfoName() {
@@ -34,6 +36,13 @@ final class FilenameRegexpLinter extends ArcanistLinter {
     return $options + parent::getLinterConfigurationOptions();
   }
 
+
+  public function getLintNameMap() {
+    return array(
+      self::LINT_INVALID_NAME => pht('Invalid name'),
+    );
+  }
+
   public function setLinterConfigurationValue($key, $value) {
     switch ($key) {
         case 'regexp':
@@ -50,13 +59,13 @@ final class FilenameRegexpLinter extends ArcanistLinter {
 
     if (!$match) {
         $message = pht(
-            "The file %s doesn't match with %s'",
+            "The file '%s' doesn't match with %s'",
             $path,
             $this->regexp
         );
 
         $this->raiseLintAtPath(
-            $path,
+            self::LINT_INVALID_NAME,
             $message
         );
     }

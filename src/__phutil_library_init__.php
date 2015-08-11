@@ -1,3 +1,3 @@
 <?php
 
-phutil_register_library('checkstyle', __FILE__);
+phutil_register_library('monits-arc-extensions', __FILE__);
