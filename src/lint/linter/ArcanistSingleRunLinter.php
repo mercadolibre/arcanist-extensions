@@ -25,6 +25,8 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
         $root = $working_copy->getProjectRoot();
         chdir($root);
 
+        $this->prepareToLintPaths($paths);
+
         $result = exec_manual($this->buildCommand($paths));
         $messages = $this->parseLinterOutput($paths,
             $result[0], $result[1], $result[2]);
@@ -34,8 +36,7 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
         }
     }
 
-    final public function didLintPaths(array $paths) {
-    }
+    final public function didLintPaths(array $paths) {}
 
     abstract protected function getPathsArgumentForLinter($path);
     abstract protected function getDefaultBinary();
@@ -43,6 +44,8 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
     abstract protected function getDefaultFlags();
     abstract protected function parseLinterOutput(
         $paths, $err, $stdout, $stderr);
+
+    protected function prepareToLintPaths(array $paths) {}
 
     final protected function buildCommand($paths) {
         $binary = $this->getDefaultBinary();

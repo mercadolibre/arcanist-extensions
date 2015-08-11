@@ -1,42 +1,82 @@
 <?php
 
-final class ArcanistOCLintLinter extends ArcanistLinter {
+final class OCLintLinter extends ArcanistSingleRunLinter {
 
-    private $_xctoolPath = '/opt/xctool/xctool.sh';
+    private $oclintBin = 'oclint';
 
-    private $_oclintBin = 'oclint';
+    private $xcprettyBin = 'xcpretty';
+
+    private $workspace;
+
+    private $scheme;
+
+    private $configuration;
+
+    private $sdk;
 
     public function getLinterConfigurationOptions() {
         $options = parent::getLinterConfigurationOptions();
 
-        $options['xctool'] = array(
-            'type' => 'optional string',
-            'help' => 'Path to xctool.sh'
+        $options['workspace'] = array(
+            'type' => 'string',
+            'help' => 'The .xcworkspace to build on',
+        );
+
+        $options['scheme'] = array(
+            'type' => 'string',
+            'help' => 'The workspace scheme to build',
+        );
+
+        $options['configuration'] = array(
+            'type' => 'string',
+            'help' => 'Target build configuration',
+        );
+
+        $options['sdk'] = array(
+            'type' => 'string',
+            'help' => 'SDK to build against to',
         );
 
         $options['oclint'] = array(
             'type' => 'optional string',
-            'help' => 'Path to oclint-json-compilation-database'
+            'help' => 'Path to oclint-json-compilation-database',
+        );
+
+        $options['xcpretty'] = array(
+            'type' => 'optional string',
+            'help' => 'Path to xcpretty executable',
         );
 
         return $options;
     }
 
     public function setLinterConfigurationValue($key, $value) {
-        switch($key) {
-        case 'xctool':
-            $this->_xctoolPath = $value;
+        switch ($key) {
+        case 'scheme':
+            $this->scheme = $value;
+            return;
+        case 'workspace':
+            $this->workspace = $value;
+            return;
+        case 'sdk':
+            $this->sdk = $value;
+            return;
+        case 'configuration':
+            $this->configuration = $value;
             return;
         case 'oclint':
-            $this->_oclintBin = $value;
+            $this->oclintBin = $value;
+            return;
+        case 'xcpretty':
+            $this->xcprettyBin = $value;
             return;
         }
         return parent::setLinterConfigurationValue($key, $value);
     }
 
-    private function getDefaultBinary() {
+    protected function getDefaultBinary() {
 
-        list($err, $stdout) = exec_manual('which %s', $this->_oclintBin);
+        list($err, $stdout) = exec_manual('which %s', $this->oclintBin);
         if ($err) {
             throw new ArcanistUsageException("can't find oclint");
         }
@@ -44,11 +84,11 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
         return trim($stdout);
     }
 
-    private function getXCToolPath() {
+    private function getXCPrettyPath() {
 
-        list($err, $stdout) = exec_manual('which %s', $this->_xctoolPath);
+        list($err, $stdout) = exec_manual('which %s', $this->xcprettyBin);
         if ($err) {
-            throw new ArcanistUsageException("can't find xctool");
+            throw new ArcanistUsageException("can't find xcpretty");
         }
 
         return trim($stdout);
@@ -76,7 +116,7 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
         $root = $working_copy->getProjectRoot();
 
         return array(
-            '-p "' . $root . '"'
+            '-p "'.$root.'"',
         );
     }
 
@@ -85,44 +125,33 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
         return $config->getConfigFromAnySource('lint.oclint.options', array());
     }
 
-    final public function willLintPaths(array $paths) {
+    protected function prepareToLintPaths(array $paths) {
 
-        $working_copy = $this->getEngine()->getWorkingCopy();
-        $root = $working_copy->getProjectRoot();
-        chdir($root);
+        $result = exec_manual('xcodebuild '
+            .'-workspace %s '
+            .'-scheme %s '
+            .'-configuration %s '
+            .'-sdk %s '
+            .'-dry-run '
+            .'clean build '
+            .'| %s '
+            .'--report json-compilation-database '
+            .'--output compile_commands.json ',
+            $this->workspace,
+            $this->scheme,
+            $this->configuration,
+            $this->sdk,
+            $this->getXCPrettyPath());
 
-        $result = exec_manual('%s -reporter'
-            . ' json-compilation-database:compile_commands.json clean build',
-            $this->getXCToolPath());
         if ($result[0]) {
-            throw new Exception('failed executing xctool'
-                . PHP_EOL . $result[2]);
+            throw new Exception('failed executing xcodebuild'
+                .PHP_EOL.$result[2]);
         }
-
-        $result = exec_manual($this->buildCommand($paths));
-        $messages = $this->parseLinterOutput($paths,
-            $result[0], $result[1], $result[2]);
-
-        foreach ($messages as $message) {
-            $this->addLintMessage($message);
-        }
-    }
-
-    final public function lintPath($path) {
-        // older versions of arc get angry at me if this method isn't defined.
-    }
-
-    final protected function buildCommand($paths) {
-        $binary = $this->getDefaultBinary();
-        $args = implode(' ', $this->getMandatoryFlags());
-        $args = $args . implode(' ', $this->getDefaultFlags());
-        $paths = $this->getPathsArgumentForLinter($paths);
-        return "$binary $args $paths";
     }
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
-        $errorRegex = '/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+):'
-            . ' (?<name>.*) (?<priority>P[0-9]) (?<desc>.*)/is';
+        $error_regexp = '/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+):'
+            .' (?<name>.*) (?<priority>P[0-9]) (?<desc>.*)/is';
         $messages = array();
 
         if ($stdout === '') {
@@ -131,12 +160,12 @@ final class ArcanistOCLintLinter extends ArcanistLinter {
 
         foreach (explode("\n", $stdout) as $line) {
             $matches = array();
-            if ($c = preg_match($errorRegex, $line, $matches)) {
+            if ($c = preg_match($error_regexp, $line, $matches)) {
                 $name = $matches['name'];
-                $completeCode = 'OCLINT.'.strtoupper(str_replace(' ', '_', $name));
+                $complete_code = 'OCLINT.'.strtoupper(str_replace(' ', '_', $name));
 
                 // Trim to 32 just in case, conduit goes boom otherwise
-                $code = substr($completeCode, 0, 32);
+                $code = substr($complete_code, 0, 32);
 
                 $message = new ArcanistLintMessage();
                 $message->setPath($matches['file']);
