@@ -2,81 +2,17 @@
 
 final class OCLintLinter extends ArcanistSingleRunLinter {
 
-    private $oclintBin = 'oclint';
-
-    private $xcprettyBin = 'xcpretty';
-
-    private $workspace;
-
-    private $scheme;
-
-    private $configuration;
-
-    private $sdk;
-
-    public function getLinterConfigurationOptions() {
-        $options = parent::getLinterConfigurationOptions();
-
-        $options['workspace'] = array(
-            'type' => 'string',
-            'help' => 'The .xcworkspace to build on',
-        );
-
-        $options['scheme'] = array(
-            'type' => 'string',
-            'help' => 'The workspace scheme to build',
-        );
-
-        $options['configuration'] = array(
-            'type' => 'string',
-            'help' => 'Target build configuration',
-        );
-
-        $options['sdk'] = array(
-            'type' => 'string',
-            'help' => 'SDK to build against to',
-        );
-
-        $options['oclint'] = array(
-            'type' => 'optional string',
-            'help' => 'Path to oclint-json-compilation-database',
-        );
-
-        $options['xcpretty'] = array(
-            'type' => 'optional string',
-            'help' => 'Path to xcpretty executable',
-        );
-
-        return $options;
-    }
-
-    public function setLinterConfigurationValue($key, $value) {
-        switch ($key) {
-        case 'scheme':
-            $this->scheme = $value;
-            return;
-        case 'workspace':
-            $this->workspace = $value;
-            return;
-        case 'sdk':
-            $this->sdk = $value;
-            return;
-        case 'configuration':
-            $this->configuration = $value;
-            return;
-        case 'oclint':
-            $this->oclintBin = $value;
-            return;
-        case 'xcpretty':
-            $this->xcprettyBin = $value;
-            return;
-        }
-        return parent::setLinterConfigurationValue($key, $value);
+    public function getInfoDescription() {
+        return 'This uses xcodebuild, xcpretty and oclint.'.PHP_EOL
+            .'It assumes you use cocoapods for project organization. You can configure the following keys:'.PHP_EOL
+            .XcodebuildConfiguration::getOptionsDescription();
     }
 
     protected function getDefaultBinary() {
+        $config = $this->getEngine()->getConfigurationManager();
+        $oclint_bin = $config->getConfigFromAnySource('bin.oclint', 'oclint');
 
-        list($err, $stdout) = exec_manual('which %s', $this->oclintBin);
+        list($err, $stdout) = exec_manual('which %s', $oclint_bin);
         if ($err) {
             throw new ArcanistUsageException("can't find oclint");
         }
@@ -85,8 +21,10 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
     }
 
     private function getXCPrettyPath() {
+        $config = $this->getEngine()->getConfigurationManager();
+        $xcpretty_bin = $config->getConfigFromAnySource('bin.xcpretty', 'xcpretty');
 
-        list($err, $stdout) = exec_manual('which %s', $this->xcprettyBin);
+        list($err, $stdout) = exec_manual('which %s', $xcpretty_bin);
         if ($err) {
             throw new ArcanistUsageException("can't find xcpretty");
         }
@@ -126,21 +64,14 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
     }
 
     protected function prepareToLintPaths(array $paths) {
+        $configuration_manager = $this->getEngine()->getConfigurationManager();
+        $configuration = new XcodebuildConfiguration($configuration_manager);
 
-        $result = exec_manual('xcodebuild '
-            .'-workspace %s '
-            .'-scheme %s '
-            .'-configuration %s '
-            .'-sdk %s '
-            .'-dry-run '
-            .'clean build '
+        $build_flags = array('-dry-run', 'clean', 'build');
+        $result = exec_manual($configuration->buildCommand($build_flags)
             .'| %s '
             .'--report json-compilation-database '
             .'--output compile_commands.json ',
-            $this->workspace,
-            $this->scheme,
-            $this->configuration,
-            $this->sdk,
             $this->getXCPrettyPath());
 
         if ($result[0]) {

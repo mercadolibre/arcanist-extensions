@@ -41,6 +41,7 @@ phutil_register_library_map(array(
     'PmdMavenLintProvider' => 'lint/provider/maven/PmdMavenLintProvider.php',
     'PmdParser' => 'lint/parser/PmdParser.php',
     'RegexpLinter' => 'lint/linter/RegexpLinter.php',
+    'XcodebuildConfiguration' => 'configuration/XcodebuildConfiguration.php',
   ),
   'function' => array(),
   'xmap' => array(
