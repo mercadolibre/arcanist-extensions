@@ -7,7 +7,7 @@ class CpdGradleLintProvider implements GradleLintProvider {
   }
 
   public function getTargets() {
-    return array('build');
+    return array('cpd');
   }
 
   public function parseLinterOutput(array $paths) {

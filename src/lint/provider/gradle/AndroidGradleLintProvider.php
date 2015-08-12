@@ -7,7 +7,7 @@ class AndroidGradleLintProvider implements GradleLintProvider {
   }
 
   public function getTargets() {
-    return array('build');
+    return array('lint');
   }
 
   public function parseLinterOutput(array $paths) {

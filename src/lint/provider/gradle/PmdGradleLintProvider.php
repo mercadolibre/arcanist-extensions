@@ -7,7 +7,7 @@ class PmdGradleLintProvider implements GradleLintProvider {
   }
 
   public function getTargets() {
-    return array('build');
+    return array('pmd');
   }
 
   public function parseLinterOutput(array $paths) {

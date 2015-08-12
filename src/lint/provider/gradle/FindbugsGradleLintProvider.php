@@ -7,7 +7,7 @@ class FindbugsGradleLintProvider implements GradleLintProvider {
   }
 
   public function getTargets() {
-    return array('build');
+    return array('findbugs');
   }
 
   public function parseLinterOutput(array $paths) {

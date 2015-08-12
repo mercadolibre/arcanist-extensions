@@ -7,7 +7,7 @@ class CheckstyleGradleLintProvider implements GradleLintProvider {
   }
 
   public function getTargets() {
-    return array('build');
+    return array('checkstyle');
   }
 
   public function parseLinterOutput(array $paths) {
