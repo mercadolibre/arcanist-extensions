@@ -42,6 +42,7 @@ phutil_register_library_map(array(
     'PmdParser' => 'lint/parser/PmdParser.php',
     'RegexpLinter' => 'lint/linter/RegexpLinter.php',
     'XcodebuildConfiguration' => 'configuration/XcodebuildConfiguration.php',
+    'XcodebuildUnitTestEngine' => 'unit/engine/XcodebuildUnitTestEngine.php',
   ),
   'function' => array(),
   'xmap' => array(
@@ -75,5 +76,6 @@ phutil_register_library_map(array(
     'PmdMavenLintProvider' => 'MavenLintProvider',
     'PmdParser' => 'AbstractFileParser',
     'RegexpLinter' => 'ArcanistLinter',
+    'XcodebuildUnitTestEngine' => 'AbstractXUnitTestEngine',
   ),
 ));
