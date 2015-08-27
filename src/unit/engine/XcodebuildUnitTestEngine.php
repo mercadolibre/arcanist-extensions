@@ -32,14 +32,24 @@ final class XcodebuildUnitTestEngine extends AbstractXUnitTestEngine {
     protected function buildCommand($paths) {
         $configuration_manager = $this->getConfigurationManager();
 
-        $destination = $configuration_manager->getProjectConfig('xctest.destination');
-        if (!$destination) {
+        $destinations = $configuration_manager->getProjectConfig('xctest.destination');
+        if (!$destinations) {
             throw new ArcanistUsageException('You must set \'xctest.destination\'');
+        }
+
+        if (is_string($destinations)) {
+            $destinations = array($destinations);
         }
 
         $configuration = new XcodebuildConfiguration($configuration_manager);
 
-        $build_flags = array('test', '-destination', '"'.$destination.'"');
+        $build_flags = array('test');
+
+        foreach ($destinations as $destination) {
+            $build_flags[] = '-destination';
+            $build_flags[] = '"'.$destination.'"';
+        }
+
         return $configuration->buildCommand($build_flags)
             .'| '.$this->getXCPrettyPath().' '
             .'--report junit '
