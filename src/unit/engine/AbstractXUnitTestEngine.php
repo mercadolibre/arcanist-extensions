@@ -38,7 +38,10 @@ abstract class AbstractXUnitTestEngine extends ArcanistUnitTestEngine {
 
         // exec test runner
         $result = exec_manual($this->buildCommand(array()));
+        return $this->processCommandResult($result);
+    }
 
+    protected function processCommandResult($result) {
         // find files and parse results
         $files = $this->findTestXmlFiles();
 

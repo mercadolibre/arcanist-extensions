@@ -50,10 +50,29 @@ final class XcodebuildUnitTestEngine extends AbstractXUnitTestEngine {
             $build_flags[] = '"'.$destination.'"';
         }
 
-        return $configuration->buildCommand($build_flags)
+        // the pipefail makes xcpretty abort with the same status code as xcode
+        return 'set -o pipefail && '
+            .$configuration->buildCommand($build_flags)
             .'| '.$this->getXCPrettyPath().' '
             .'--report junit '
             .'--output build/reports/junit.xml ';
+    }
+
+    protected function processCommandResult($result) {
+        $status_code = $result[0];
+        $test_results = parent::processCommandResult($result);
+
+        if ($status_code != 0 && count($test_results) == 0) {
+            $build_result = new ArcanistUnitTestResult();
+            $build_result->setName('Failed to run tests');
+            $build_result->setResult(ArcanistUnitTestResult::RESULT_FAIL);
+            $build_result->setUserdata($result[1]);
+            $build_result->setDuration(0);
+
+            return array($build_result);
+        }
+
+        return $test_results;
     }
 
     public function getDefaultBinary() {}
