@@ -2,9 +2,10 @@
 
 class CLICPDLinter extends ArcanistSingleRunLinter {
 
-  private $minimun_tokens = 100;
+  private $minimunTokens = 100;
   private $exclude = array();
   private $language = null;
+  private $defaultPaths = array();
 
   public function getLinterName() {
     return 'cpd-cli';
@@ -28,6 +29,10 @@ class CLICPDLinter extends ArcanistSingleRunLinter {
         'type' => 'string',
         'help' => pht('Language to check'),
       ),
+      'paths' => array(
+        'type' => 'optional list<string>',
+        'help' => pht('Paths to always include when running'),
+      ),
     );
 
     return $options + parent::getLinterConfigurationOptions();
@@ -36,13 +41,16 @@ class CLICPDLinter extends ArcanistSingleRunLinter {
   public function setLinterConfigurationValue($key, $value) {
     switch ($key) {
     case 'minimum-tokens':
-      $this->minimun_tokens = $value;
+      $this->minimunTokens = $value;
       return;
     case 'exclude':
       $this->exclude = $value;
       return;
     case 'language':
       $this->language = $value;
+      return;
+    case 'paths':
+      $this->defaultPaths = $value;
       return;
     }
 
@@ -51,8 +59,8 @@ class CLICPDLinter extends ArcanistSingleRunLinter {
 
   protected function getPathsArgumentForLinter($paths) {
     return implode(' ', array_map(function ($path) {
-      return '--files "' . $path . '"';
-    }, $paths));
+      return '--files "'.$path.'"';
+    }, array_merge($this->defaultPaths, $paths)));
   }
 
   protected function getDefaultBinary() {
@@ -63,11 +71,12 @@ class CLICPDLinter extends ArcanistSingleRunLinter {
   protected function getMandatoryFlags() {
     return array(
       'cpd',
-      '--language ' . $this->language,
-      '--minimum-tokens ' . $this->minimun_tokens,
+      '--language '.$this->language,
+      '--minimum-tokens '.$this->minimunTokens,
       '--format xml',
+      '--skip-duplicate-files',
     ) + array_map(function ($path) {
-      return '--exclude "' . $path . '"';
+      return '--exclude "'.$path.'"';
     }, $this->exclude);
 
   }
@@ -79,7 +88,7 @@ class CLICPDLinter extends ArcanistSingleRunLinter {
   protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
 
     // In this mode, CPD doesn't output anything when no matches were found
-    if ($stdout == "") {
+    if ($stdout == '') {
       return array();
     }
 
