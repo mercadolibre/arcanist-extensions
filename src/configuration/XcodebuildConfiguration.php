@@ -60,7 +60,7 @@ final class XcodebuildConfiguration {
     public function buildCommand(array $flags) {
         $this->loadConfig();
 
-        return sprintf('%s '
+        $command = new PhutilCommandString(array('%s '
             .'-workspace %s '
             .'-scheme %s '
             .'-configuration %s '
@@ -70,6 +70,9 @@ final class XcodebuildConfiguration {
             $this->workspace,
             $this->scheme,
             $this->configuration,
-            $this->sdk);
+            $this->sdk,
+        ));
+
+        return $command->getMaskedString();
     }
 }
