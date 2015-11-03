@@ -38,15 +38,15 @@ abstract class AbstractMetaLinter extends ArcanistSingleRunLinter {
 
     $availableLintNames = array();
     foreach ($this->_availableLints as $lint) {
-      $availableLintNames[] = '"' . $lint->getName() . '"';
+      $availableLintNames[] = '"'.$lint->getName().'"';
     }
 
     $options['lints'] = array(
       'type' => 'list<string>',
       'help' => 'The list of lint pugins to be run by '
-        . $this->getLinterName()
-        . ' Currently supported values are: '
-        . implode(', ', $availableLintNames)
+        .$this->getLinterName()
+        .' Currently supported values are: '
+        .implode(', ', $availableLintNames),
     );
 
     return $options;
@@ -91,7 +91,7 @@ abstract class AbstractMetaLinter extends ArcanistSingleRunLinter {
   public function getDefaultFlags() {
     $config = $this->getEngine()->getConfigurationManager();
     return $config->getConfigFromAnySource(
-      'lint.' . $this->getLinterConfigurationName() . '.options', array());
+      'lint.'.$this->getLinterConfigurationName().'.options', array());
   }
 
   public function getMandatoryFlags() {
@@ -104,18 +104,20 @@ abstract class AbstractMetaLinter extends ArcanistSingleRunLinter {
 
 
   protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
+    $messages = array();
+
     if ($err) {
       $message = new ArcanistLintMessage();
       $message->setCode('COMPILE');
       $message->setDescription(
         "Compilation failed.\nstdout: $stdout\nstderr: $stderr");
       $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+      $message->setName('Compile error');
 
       $messages[] = $message;
       return $messages;
     }
 
-    $messages = array();
     foreach ($this->_linters as $linter) {
       $messages = array_merge($messages, $linter->parseLinterOutput($paths));
     }
