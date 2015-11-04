@@ -1,6 +1,6 @@
 <?php
 
-final class ArcanistESLintLinter extends ConfigPathLinter {
+final class ESLintLinter extends ConfigPathLinter {
 
     public function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
@@ -9,13 +9,14 @@ final class ArcanistESLintLinter extends ConfigPathLinter {
 
     public function getMandatoryFlags() {
         return array(
-            '--format', 'checkstyle'
+            '--format',
+            'checkstyle',
         );
     }
 
     public function getInstallInstructions() {
         return 'Install eslint via npm (npm install -g eslint). '
-            . 'Much obliged.';
+            .'Much obliged.';
     }
 
     public function getLinterName() {
@@ -36,15 +37,15 @@ final class ArcanistESLintLinter extends ConfigPathLinter {
 
         if (!$stdout) {
             throw new ArcanistUsageException('The linter failed to produce '
-                . 'a meaningful response. Paste the following in your bug '
-                . "report, please.\n"
-                . $stderr);
+                .'a meaningful response. Paste the following in your bug '
+                ."report, please.\n"
+                .$stderr);
         }
 
         $ok = $report_dom->loadXML($stdout);
         if (!$ok) {
             throw new ArcanistUsageException('Arcanist failed to parse the '
-                . 'linter output. Aborting.');
+                .'linter output. Aborting.');
         }
 
         // This looks suspiciosly like the checkstyle output, but it's stlight different...
@@ -64,6 +65,7 @@ final class ArcanistESLintLinter extends ConfigPathLinter {
 
                 // All descriptions end with (rule-name), make into Rule name
                 $description = $child->getAttribute('message');
+                $messageMatches = array();
                 if (preg_match('/\(([^)]+)\)$/', $description, $messageMatches)) {
                     $rule = $messageMatches[1];
                     $name = ucfirst(strtolower(str_replace('-', ' ', $rule)));

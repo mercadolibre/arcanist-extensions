@@ -1,6 +1,6 @@
 <?php
 
-final class ArcanistSassLinter extends ConfigPathLinter {
+final class SassLinter extends ConfigPathLinter {
 
     public function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
@@ -9,7 +9,8 @@ final class ArcanistSassLinter extends ConfigPathLinter {
 
     public function getMandatoryFlags() {
         return array(
-            '-f', 'XML'
+            '-f',
+            'XML',
         );
     }
 
@@ -35,16 +36,16 @@ final class ArcanistSassLinter extends ConfigPathLinter {
 
         if (!$stdout) {
             throw new ArcanistUsageException('The linter produced no output. '
-                . 'This might be a bug, so I\'m showing you the stderr below:'
-                . "\n" . $stderr);
+                .'This might be a bug, so I\'m showing you the stderr below:'
+                ."\n".$stderr);
         }
 
         $ok = $report_dom->loadXML($stdout);
         if (!$ok) {
             throw new ArcanistUsageException('The linter produced no parseable '
-                . 'output. This might be a bug, so I\'m showing you '
-                . 'the stderr below:'
-                . "\n" . $stderr);
+                .'output. This might be a bug, so I\'m showing you '
+                .'the stderr below:'
+                ."\n".$stderr);
         }
 
         $files = $report_dom->getElementsByTagName('file');
@@ -62,7 +63,7 @@ final class ArcanistSassLinter extends ConfigPathLinter {
                 }
 
                 $rule = $child->getAttribute('linter');
-                $words = preg_split("/(?<=[a-z])(?![a-z])/", $rule, -1, PREG_SPLIT_NO_EMPTY);
+                $words = preg_split('/(?<=[a-z])(?![a-z])/', $rule, -1, PREG_SPLIT_NO_EMPTY);
                 $name = implode(' ', $words);
 
                 $code = 'SASS.'.$prefix.'.'.$rule;

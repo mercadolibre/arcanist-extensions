@@ -2,13 +2,13 @@
 
 abstract class AbstractFileParser {
 
-  protected abstract function parse($content);
+  abstract protected function parse($content);
 
-  public final function parsePath($file, array $paths) {
+  final public function parsePath($file, array $paths) {
     return $this->parseContent(file_get_contents($file), $paths);
   }
 
-  public final function parseContent($content, array $paths) {
+  final public function parseContent($content, array $paths) {
     $messages = $this->parse($content);
 
     /*
@@ -48,7 +48,7 @@ abstract class AbstractFileParser {
     return $messages;
   }
 
-  public final function parseAll($file_regex, array $paths) {
+  final public function parseAll($file_regex, array $paths) {
     $files = $this->findFilesByRegex($file_regex);
 
     $messages = array();
@@ -71,7 +71,7 @@ abstract class AbstractFileParser {
     }
     if (!count($files)) {
       throw new Exception('Could not find any matching files.'
-        . ' Check this project is correctly configured');
+        .' Check this project is correctly configured');
     }
     return $files;
   }

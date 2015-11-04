@@ -16,7 +16,7 @@ class GradleLinter extends AbstractMetaLinter {
 
   public function getInstallInstructions() {
     return pht('Have a build.gradle in the root configuring every plugin'
-      . ' to be used for linting.');
+      .' to be used for linting.');
   }
 
   public function getDefaultBinary() {

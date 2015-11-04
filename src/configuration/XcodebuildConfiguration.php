@@ -60,7 +60,8 @@ final class XcodebuildConfiguration {
     public function buildCommand(array $flags) {
         $this->loadConfig();
 
-        $command = new PhutilCommandString(array('%s '
+        $command = new PhutilCommandString(array(
+            '%s '
             .'-workspace %s '
             .'-scheme %s '
             .'-configuration %s '

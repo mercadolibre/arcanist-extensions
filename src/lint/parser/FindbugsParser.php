@@ -8,8 +8,8 @@ class FindbugsParser extends AbstractFileParser {
     $ok = $report_dom->loadXML($content);
     if (!$ok) {
       throw new Exception('Arcanist could not load the linter output. '
-        . 'Either the linter failed to produce a meaningful'
-        . ' response or failed to write the file.');
+        .'Either the linter failed to produce a meaningful'
+        .' response or failed to write the file.');
     }
 
     $directory = new RecursiveDirectoryIterator(getcwd());
@@ -23,7 +23,9 @@ class FindbugsParser extends AbstractFileParser {
       $description = $description->item(0);
       $description = $description->nodeValue;
 
-      if (!$bug->hasChildNodes()) return;
+      if (!$bug->hasChildNodes()) {
+        return;
+      }
 
       $children = $bug->childNodes;
       $sourceline = null;
