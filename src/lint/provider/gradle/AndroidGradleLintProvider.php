@@ -10,6 +10,14 @@ class AndroidGradleLintProvider implements GradleLintProvider {
     return array('lint');
   }
 
+  public function shouldLintBinaryFiles() {
+    return true;
+  }
+
+  public function shouldLintDirectories() {
+    return true;
+  }
+
   public function parseLinterOutput(array $paths) {
     $parser = new AndroidParser();
     return $parser->parseAll(
