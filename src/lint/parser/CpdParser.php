@@ -8,8 +8,8 @@ class CpdParser extends AbstractFileParser {
     $ok = $report_dom->loadXML($content);
     if (!$ok) {
       throw new Exception('Arcanist could not load the linter output. '
-        . 'Either the linter failed to produce a meaningful'
-        . ' response or failed to write the file.');
+        .'Either the linter failed to produce a meaningful'
+        .' response or failed to write the file.');
     }
 
     $duplications = $report_dom->getElementsByTagName('duplication');
@@ -36,7 +36,7 @@ class CpdParser extends AbstractFileParser {
       $message->setDescription($description);
       $message->setSeverity($this->getLintMessageSeverity($prefix));
       $message->setLine(intval($sourceline));
-      $message->setName("Duplicated code");
+      $message->setName('Duplicated code');
 
       $messages[] = $message;
     }

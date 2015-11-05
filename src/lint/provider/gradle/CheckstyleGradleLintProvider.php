@@ -1,6 +1,6 @@
 <?php
 
-class CheckstyleGradleLintProvider implements GradleLintProvider {
+class CheckstyleGradleLintProvider extends DefaultLintProvider implements GradleLintProvider {
 
   public function getName() {
     return 'checkstyle';

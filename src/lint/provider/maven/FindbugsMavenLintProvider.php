@@ -1,6 +1,6 @@
 <?php
 
-class FindbugsMavenLintProvider implements MavenLintProvider {
+class FindbugsMavenLintProvider extends DefaultLintProvider implements MavenLintProvider {
 
   public function getName() {
     return 'findbugs';
@@ -9,7 +9,7 @@ class FindbugsMavenLintProvider implements MavenLintProvider {
   public function getTargets() {
     return array(
       'test-compile',
-      'findbugs:findbugs'
+      'findbugs:findbugs',
     );
   }
 
@@ -36,7 +36,7 @@ class FindbugsMavenLintProvider implements MavenLintProvider {
        * we can use SOME RegExp expressions, and that's exactly what
        * we do here!
       */
-      $classNames[] = $class . '\\$\\\\S+';
+      $classNames[] = $class.'\\$\\\\S+';
     }
     $classes = implode(',', $classNames);
     return sprintf('-Dfindbugs.onlyAnalyze="%s"', $classes);
@@ -48,7 +48,7 @@ class FindbugsMavenLintProvider implements MavenLintProvider {
       if ($idx !== false) {
 
         $relative_path = substr($path, $idx + strlen($prefix));
-        if (0 === strpos($relative_path, '/')) {
+        if (0 === strncmp($relative_path, '/', 1)) {
           $relative_path = substr($relative_path, 1);
         }
 

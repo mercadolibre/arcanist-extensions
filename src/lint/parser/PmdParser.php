@@ -8,8 +8,8 @@ class PmdParser extends AbstractFileParser {
     $ok = $report_dom->loadXML($content);
     if (!$ok) {
       throw new Exception('Arcanist could not load the linter output. '
-        . 'Either the linter failed to produce a meaningful'
-        . ' response or failed to write the file.');
+        .'Either the linter failed to produce a meaningful'
+        .' response or failed to write the file.');
     }
 
     $files = $report_dom->getElementsByTagName('file');
@@ -31,7 +31,7 @@ class PmdParser extends AbstractFileParser {
         }
 
         $rule = $violation->getAttribute('rule');
-        $words = preg_split("/(?<=[a-z])(?![a-z])/", $rule, -1, PREG_SPLIT_NO_EMPTY);
+        $words = preg_split('/(?<=[a-z])(?![a-z])/', $rule, -1, PREG_SPLIT_NO_EMPTY);
         $name = implode(' ', $words);
 
         $code = 'PMD.'.$prefix.'.'.$rule;

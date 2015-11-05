@@ -9,7 +9,7 @@ class MavenLinter extends AbstractMetaLinter {
     // Default paths for a java project
     $this->_srcPaths = array(
       'src/main/java',
-      'src/test/java'
+      'src/test/java',
     );
   }
 
@@ -27,8 +27,8 @@ class MavenLinter extends AbstractMetaLinter {
     $options['paths'] = array(
       'type' => 'optional list<string>',
       'help' => 'An optional list of the build paths used by this project. '
-        . 'This is needed only if you don\'t use a standard layout '
-        . 'or are not using Java.'
+        .'This is needed only if you don\'t use a standard layout '
+        .'or are not using Java.',
     );
 
     return $options;
@@ -36,7 +36,7 @@ class MavenLinter extends AbstractMetaLinter {
 
   public function getInstallInstructions() {
     return pht('Have a pom.xml in the root configuring every plugin'
-      . ' to be used for linting.');
+      .' to be used for linting.');
   }
 
   public function getDefaultBinary() {

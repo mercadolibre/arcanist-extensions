@@ -12,7 +12,7 @@ abstract class ConfigPathLinter extends ArcanistExternalLinter {
     }
 
     public function setLinterConfigurationValue($key, $value) {
-        switch($key) {
+        switch ($key) {
         case 'config':
             $this->configPath = $value;
             return;
@@ -25,7 +25,7 @@ abstract class ConfigPathLinter extends ArcanistExternalLinter {
 
         $options['config'] = array(
             'type' => 'optional string',
-            'help' => 'An optional config file'
+            'help' => 'An optional config file',
         );
 
         return $options;

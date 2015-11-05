@@ -7,17 +7,17 @@ class AndroidParser extends AbstractFileParser {
 
     if ($filexml === false) {
       throw new Exception('Arcanist could not load the linter output. '
-        . 'Either the linter failed to produce a meaningful'
-        . ' response or failed to write the file.');
+        .'Either the linter failed to produce a meaningful'
+        .' response or failed to write the file.');
     }
 
     if ($filexml->attributes()->format < 4) {
       throw new ArcanistUsageException('Unsupported Android lint'
-        . ' output version. Please update your Android SDK to the'
-        . ' latest version.');
+        .' output version. Please update your Android SDK to the'
+        .' latest version.');
     } else if ($filexml->attributes()->format > 4) {
       throw new ArcanistUsageException('Unsupported Android lint'
-        . ' output version. Arc Lint needs an update to match.');
+        .' output version. Arc Lint needs an update to match.');
     }
 
     foreach ($filexml as $issue) {
@@ -25,7 +25,7 @@ class AndroidParser extends AbstractFileParser {
       $issue_attrs = $issue->attributes();
 
       $message = new ArcanistLintMessage();
-      $message->setPath((string) $loc_attrs->file);
+      $message->setPath((string)$loc_attrs->file);
       // Line number and column are irrelevant for
       // artwork and other assets
       if (isset($loc_attrs->line)) {
@@ -34,8 +34,8 @@ class AndroidParser extends AbstractFileParser {
       if (isset($loc_attrs->column)) {
         $message->setChar(intval($loc_attrs->column));
       }
-      $message->setName((string) $issue_attrs->id);
-      $message->setCode('AND.' . (string) $issue_attrs->category);
+      $message->setName((string)$issue_attrs->id);
+      $message->setCode('AND.'.(string)$issue_attrs->category);
       $message->setDescription(preg_replace('/^\[.*?\]\s*/', '',
         $issue_attrs->message));
 

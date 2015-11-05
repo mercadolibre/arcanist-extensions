@@ -8,7 +8,7 @@ final class RegexpLinter extends ArcanistLinter {
   private $rules = array();
 
   public function getInfoName() {
-    return pht('RegexpLinter');
+    return pht('REGEXP');
   }
 
   public function getInfoDescription() {
@@ -32,7 +32,7 @@ final class RegexpLinter extends ArcanistLinter {
       'rules' => array(
         'type' => 'map<string, map<string, string>>',
         'help' => pht('Pass in custom rules by specifying the "regexp", '
-            . '"message", and optionally, "fixup" and "severity".'),
+            .'"message", and optionally, "fixup" and "severity".'),
       ),
     );
 
@@ -44,8 +44,8 @@ final class RegexpLinter extends ArcanistLinter {
       case 'rules':
         // Validate required keys are present
         foreach ($value as $name => $rule) {
-          $this->requireKey($rule, 'regexp');
-          $this->requireKey($rule, 'message');
+          $this->requireKey($rule, $name, 'regexp');
+          $this->requireKey($rule, $name, 'message');
         }
 
         $this->rules = $value;
@@ -55,10 +55,10 @@ final class RegexpLinter extends ArcanistLinter {
     return parent::setLinterConfigurationValue($key, $value);
   }
 
-  private function requireKey($rule, $key) {
+  private function requireKey($rule, $ruleName, $key) {
     if (!isset($rule[$key])) {
       throw new Exception(
-        pht('Rule %s is missing the "%s" to apply', $name, $key));
+        pht('Rule %s is missing the "%s" to apply', $ruleName, $key));
     }
   }
 

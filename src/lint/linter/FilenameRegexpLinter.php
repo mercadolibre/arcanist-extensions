@@ -10,7 +10,7 @@ final class FilenameRegexpLinter extends ArcanistLinter {
   private $regexp = null;
 
   public function getInfoName() {
-    return pht('FilenameRegexpLinter');
+    return pht('FILENAMEREGEXP');
   }
 
   public function getInfoDescription() {
@@ -61,13 +61,11 @@ final class FilenameRegexpLinter extends ArcanistLinter {
         $message = pht(
             "The file '%s' doesn't match with %s'",
             $path,
-            $this->regexp
-        );
+            $this->regexp);
 
         $this->raiseLintAtPath(
             self::LINT_INVALID_NAME,
-            $message
-        );
+            $message);
     }
   }
 

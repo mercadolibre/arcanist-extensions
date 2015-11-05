@@ -1,6 +1,6 @@
 <?php
 
-class CpdGradleLintProvider implements GradleLintProvider {
+class CpdGradleLintProvider extends DefaultLintProvider implements GradleLintProvider {
 
   public function getName() {
     return 'cpd';

@@ -1,6 +1,6 @@
 <?php
 
-class CheckstyleMavenLintProvider implements MavenLintProvider {
+class CheckstyleMavenLintProvider extends DefaultLintProvider implements MavenLintProvider {
 
   public function getName() {
     return 'checkstyle';
@@ -29,7 +29,7 @@ class CheckstyleMavenLintProvider implements MavenLintProvider {
       if ($idx !== false) {
 
         $relative_path = substr($path, $idx + strlen($prefix));
-        if (0 === strpos($relative_path, '/')) {
+        if (0 === strncmp($relative_path, '/', 1)) {
           $relative_path = substr($relative_path, 1);
         }
 

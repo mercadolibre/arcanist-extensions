@@ -1,6 +1,6 @@
 <?php
 
-class PmdGradleLintProvider implements GradleLintProvider {
+class PmdGradleLintProvider extends DefaultLintProvider implements GradleLintProvider {
 
   public function getName() {
     return 'pmd';

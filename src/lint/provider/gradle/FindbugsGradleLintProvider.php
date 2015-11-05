@@ -1,6 +1,6 @@
 <?php
 
-class FindbugsGradleLintProvider implements GradleLintProvider {
+class FindbugsGradleLintProvider extends DefaultLintProvider implements GradleLintProvider {
 
   public function getName() {
     return 'findbugs';

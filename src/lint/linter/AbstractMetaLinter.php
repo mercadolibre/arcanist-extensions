@@ -102,6 +102,25 @@ abstract class AbstractMetaLinter extends ArcanistSingleRunLinter {
     return array_unique($flags); // targets MAY be repeated
   }
 
+  public function shouldLintBinaryFiles() {
+    foreach ($this->_linters as $linter) {
+      if ($linter->shouldLintBinaryFiles()) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  public function shouldLintDirectories() {
+    foreach ($this->_linters as $linter) {
+      if ($linter->shouldLintDirectories()) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
     $messages = array();

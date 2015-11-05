@@ -1,6 +1,6 @@
 <?php
 
-class CpdMavenLintProvider implements MavenLintProvider {
+class CpdMavenLintProvider extends DefaultLintProvider implements MavenLintProvider {
 
   public function getName() {
     return 'cpd';
