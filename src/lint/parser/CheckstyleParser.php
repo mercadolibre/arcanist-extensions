@@ -1,6 +1,14 @@
 <?php
 
 class CheckstyleParser extends AbstractFileParser {
+  private $name = 'Checkstyle';
+  private $callsign = 'CS';
+
+  public function setName($name, $callsign) {
+    $this->name = $name;
+    $this->callsign = $callsign;
+  }
+
   protected function parse($content) {
     $messages = array();
     $report_dom = new DOMDocument();
@@ -8,8 +16,8 @@ class CheckstyleParser extends AbstractFileParser {
     $ok = $report_dom->loadXML($content);
     if (!$ok) {
       throw new Exception('Arcanist could not load the linter output. '
-        . 'Either the linter failed to produce a meaningful'
-        . ' response or failed to write the file.');
+        .'Either the linter failed to produce a meaningful'
+        .' response or failed to write the file.');
     }
 
     $files = $report_dom->getElementsByTagName('file');
@@ -27,9 +35,9 @@ class CheckstyleParser extends AbstractFileParser {
         }
 
         // This is a java fully-qualified class name
-        $ruleCompleteName = $child->getAttribute('source');
-        $rule = substr(strrchr($ruleCompleteName, '.'), 1);
-        $code = 'CS.'.$prefix.'.'.$rule;
+        $rule_complete_name = $child->getAttribute('source');
+        $rule = substr(strrchr($rule_complete_name, '.'), 1);
+        $code = $this->callsign.'.'.$prefix.'.'.$rule;
 
         $path = $file->getAttribute('name');
 
@@ -40,7 +48,7 @@ class CheckstyleParser extends AbstractFileParser {
         $message->setCode($code);
         $message->setDescription($child->getAttribute('message'));
         $message->setSeverity($this->getLintMessageSeverity($code));
-        $message->setName('Checkstyle');
+        $message->setName($this->name);
 
         $messages[] = $message;
       }
@@ -50,7 +58,8 @@ class CheckstyleParser extends AbstractFileParser {
   }
 
   private function getLintMessageSeverity($code) {
-    if (preg_match('/^CS\\.W\\./', $code)) {
+    $prefix = preg_quote($this->callsign, '/');
+    if (preg_match('/^'.$prefix.'\\.W\\./', $code)) {
       return ArcanistLintSeverity::SEVERITY_WARNING;
     } else {
       return ArcanistLintSeverity::SEVERITY_ERROR;
