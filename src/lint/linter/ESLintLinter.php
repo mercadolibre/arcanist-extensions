@@ -32,9 +32,6 @@ final class ESLintLinter extends ConfigPathLinter {
     }
 
     protected function parseLinterOutput($path, $err, $stdout, $stderr) {
-        $messages = array();
-        $report_dom = new DOMDocument();
-
         if (!$stdout) {
             throw new ArcanistUsageException('The linter failed to produce '
                 .'a meaningful response. Paste the following in your bug '
@@ -42,63 +39,10 @@ final class ESLintLinter extends ConfigPathLinter {
                 .$stderr);
         }
 
-        $ok = $report_dom->loadXML($stdout);
-        if (!$ok) {
-            throw new ArcanistUsageException('Arcanist failed to parse the '
-                .'linter output. Aborting.');
-        }
-
-        // This looks suspiciosly like the checkstyle output, but it's stlight different...
-        $files = $report_dom->getElementsByTagName('file');
-        foreach ($files as $file) {
-            foreach ($file->childNodes as $child) {
-                if (!($child instanceof DOMElement)) {
-                    continue;
-                }
-
-                $severity = $child->getAttribute('severity');
-                if ($severity === 'error') {
-                    $prefix = 'E';
-                } else {
-                    $prefix = 'W';
-                }
-
-                // All descriptions end with (rule-name), make into Rule name
-                $description = $child->getAttribute('message');
-                $messageMatches = array();
-                if (preg_match('/\(([^)]+)\)$/', $description, $messageMatches)) {
-                    $rule = $messageMatches[1];
-                    $name = ucfirst(strtolower(str_replace('-', ' ', $rule)));
-                } else {
-                    $rule = 'Unnamed';
-                    $name = 'ESLint';
-                }
-
-
-                $code = 'ESLINT.'.$prefix.'.'.$rule;
-
-                $message = new ArcanistLintMessage();
-                $message->setPath($path);
-                $message->setLine(intval($child->getAttribute('line')));
-                $message->setChar(intval($child->getAttribute('column')));
-                $message->setCode($code);
-                $message->setDescription($description);
-                $message->setSeverity($this->getLintMessageSeverity($code));
-                $message->setName($name);
-
-                $messages[] = $message;
-            }
-        }
-
-        return $messages;
+        // arcanist lints on a file by file basis.
+        $paths = array($path);
+        $parser = new CheckstyleParser();
+        $parser->setName('ESLint', 'ESLINT');
+        return $parser->parseContent($stdout, $paths);
     }
-
-    protected function getDefaultMessageSeverity($code) {
-        if (preg_match('/^ESLINT\\.W\\./', $code)) {
-            return ArcanistLintSeverity::SEVERITY_WARNING;
-        } else {
-            return ArcanistLintSeverity::SEVERITY_ERROR;
-        }
-    }
-
 }

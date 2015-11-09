@@ -37,6 +37,9 @@ class CheckstyleParser extends AbstractFileParser {
         // This is a java fully-qualified class name
         $rule_complete_name = $child->getAttribute('source');
         $rule = substr(strrchr($rule_complete_name, '.'), 1);
+        if (!$rule) {
+            $rule = 'UNKNOWN';
+        }
         $code = $this->callsign.'.'.$prefix.'.'.$rule;
 
         $path = $file->getAttribute('name');
