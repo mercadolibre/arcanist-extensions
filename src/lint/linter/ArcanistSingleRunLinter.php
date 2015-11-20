@@ -3,6 +3,7 @@
 abstract class ArcanistSingleRunLinter extends ArcanistLinter {
 
     private $linterDidRun = false;
+    private $versionRequirement = null;
 
     final public function lintPath($path) {
         // We implement this one to stop any subclasses from doing individual ops
@@ -36,6 +37,54 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
         }
     }
 
+    /**
+     * Return a human-readable string describing how to upgrade the linter.
+     *
+     * @return string Human readable upgrade instructions
+     * @task bin
+     */
+    public function getUpgradeInstructions() {
+        return null;
+    }
+
+
+    /**
+     * Set the binary's version requirement.
+     *
+     * @param string Version requirement.
+     * @return this
+     * @task bin
+     */
+    final public function setVersionRequirement($version) {
+        $this->versionRequirement = trim($version);
+        return $this;
+    }
+
+    public function getLinterConfigurationOptions() {
+        $options = array(
+            'version' => array(
+                'type' => 'optional string',
+                'help' => pht(
+                    'Specify a version requirement for the binary. The version number '.
+                    'may be prefixed with <, <=, >, >=, or = to specify the version '.
+                    'comparison operator (default: =).'),
+                ),
+        );
+
+        return $options + parent::getLinterConfigurationOptions();
+    }
+
+    public function setLinterConfigurationValue($key, $value) {
+        switch ($key) {
+            case 'version':
+                $this->setVersionRequirement($value);
+                return;
+        }
+
+        return parent::setLinterConfigurationValue($key, $value);
+    }
+
+
     final public function didLintPaths(array $paths) {}
 
     abstract protected function getPathsArgumentForLinter($path);
@@ -48,6 +97,7 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
     protected function prepareToLintPaths(array $paths) {}
 
     final protected function buildCommand($paths) {
+        $this->checkBinaryVersion($this->getVersion());
         $binary = $this->getDefaultBinary();
         $args = implode(' ', array_merge(
             $this->getMandatoryFlags(), $this->getDefaultFlags()));
@@ -55,5 +105,64 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
         return "$binary $args $paths";
     }
 
+    public function getVersion() {
+        list($stdout) = execx('%C --version', $this->getDefaultBinary());
+        $matches = array();
+        $regex = '/(?P<version>\d+\.\d+(\.\d+)?)/';
+        if (preg_match($regex, $stdout, $matches)) {
+            return $matches['version'];
+        } else {
+            return false;
+        }
+    }
 
+    /**
+     * If a binary version requirement has been specified, compare the version
+     * of the configured binary to the required version, and if the binary's
+     * version is not supported, throw an exception.
+     *
+     * @param  string   Version string to check.
+     * @return void
+     */
+    final protected function checkBinaryVersion($version) {
+        if (!$this->versionRequirement) {
+            return;
+        }
+        if (!$version) {
+            $message = pht(
+                'Linter %s requires %s version %s. Unable to determine the version '.
+                'that you have installed.',
+                get_class($this),
+                $this->getDefaultBinary(),
+                $this->versionRequirement);
+            $instructions = $this->getUpgradeInstructions();
+            if ($instructions) {
+                $message .= "\n".pht('TO UPGRADE: %s', $instructions);
+            }
+            throw new ArcanistMissingLinterException($message);
+        }
+        $operator = '==';
+        $compare_to = $this->versionRequirement;
+        $matches = null;
+        if (preg_match('/^([<>]=?|=)\s*(.*)$/', $compare_to, $matches)) {
+            $operator = $matches[1];
+            $compare_to = $matches[2];
+            if ($operator === '=') {
+                $operator = '==';
+            }
+        }
+        if (!version_compare($version, $compare_to, $operator)) {
+            $message = pht(
+                'Linter %s requires %s version %s. You have version %s.',
+                get_class($this),
+                $this->getDefaultBinary(),
+                $this->versionRequirement,
+                $version);
+            $instructions = $this->getUpgradeInstructions();
+            if ($instructions) {
+                $message .= "\n".pht('TO UPGRADE: %s', $instructions);
+            }
+            throw new ArcanistMissingLinterException($message);
+        }
+    }
 }
