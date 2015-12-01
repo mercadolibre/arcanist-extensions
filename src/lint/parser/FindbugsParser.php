@@ -12,7 +12,9 @@ class FindbugsParser extends AbstractFileParser {
         .' response or failed to write the file.');
     }
 
-    $directory = new RecursiveDirectoryIterator(getcwd());
+    $directory = new RecursiveDirectoryIterator(getcwd(),
+        FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO
+        | FilesystemIterator::SKIP_DOTS);
     $iterator = new RecursiveIteratorIterator($directory);
 
     $bugs = $report_dom->getElementsByTagName('BugInstance');
@@ -63,6 +65,7 @@ class FindbugsParser extends AbstractFileParser {
         RecursiveRegexIterator::GET_MATCH);
       foreach ($regex as $match) {
         $filePath = $match[0];
+        break;
       }
 
       $message = new ArcanistLintMessage();
