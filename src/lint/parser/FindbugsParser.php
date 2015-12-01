@@ -1,6 +1,9 @@
 <?php
 
 class FindbugsParser extends AbstractFileParser {
+  private $reverseFileIdx = array();
+  private $srcdirsAreFolders = true;
+
   protected function parse($content) {
     $messages = array();
     $report_dom = new DOMDocument();
@@ -12,10 +15,9 @@ class FindbugsParser extends AbstractFileParser {
         .' response or failed to write the file.');
     }
 
-    $directory = new RecursiveDirectoryIterator(getcwd());
-    $iterator = new RecursiveIteratorIterator($directory);
-
     $bugs = $report_dom->getElementsByTagName('BugInstance');
+    $srcdirs = $report_dom->getElementsByTagName('SrcDir');
+    $srcdirs = $this->buildReverseIndex($srcdirs);
 
     $messages = array();
     foreach ($bugs as $bug) {
@@ -39,8 +41,8 @@ class FindbugsParser extends AbstractFileParser {
       // if we haven't found a sourceline in the buginstance's children
       // we use the last sourceline in the report.
       if ($sourceline === null) {
-        $sourcelineList = $bug->getElementsByTagName('SourceLine');
-        $sourceline = $sourcelineList->item($sourcelineList->length - 1);
+        $sourceline_list = $bug->getElementsByTagName('SourceLine');
+        $sourceline = $sourceline_list->item($sourceline_list->length - 1);
       }
 
       $severity = $bug->getAttribute('priority');
@@ -57,16 +59,11 @@ class FindbugsParser extends AbstractFileParser {
       $name = ucfirst(strtolower(str_replace('_', ' ', $type)));
 
       // File can be in any of the analyzed folders...
-      $sourcePath = $sourceline->getAttribute('sourcepath');
-      $fileRegex = '/^.+'.preg_quote($sourcePath, '/').'$/';
-      $regex = new RegexIterator($iterator, $fileRegex,
-        RecursiveRegexIterator::GET_MATCH);
-      foreach ($regex as $match) {
-        $filePath = $match[0];
-      }
+      $source_path = $sourceline->getAttribute('sourcepath');
+      $file_path = $this->getFile($source_path);
 
       $message = new ArcanistLintMessage();
-      $message->setPath($filePath);
+      $message->setPath($file_path);
       $message->setCode($code);
       $message->setDescription($description);
       $message->setSeverity($this->getLintMessageSeverity($code));
@@ -89,6 +86,55 @@ class FindbugsParser extends AbstractFileParser {
       return ArcanistLintSeverity::SEVERITY_WARNING;
     } else {
       return ArcanistLintSeverity::SEVERITY_ERROR;
+    }
+  }
+
+  private function allSrcdirsAreFolders(array &$srcdirs) {
+    foreach ($srcdirs as $dir) {
+      if (!is_dir($dir)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private function buildReverseIndex($srcdirs) {
+    $dirs = array();
+    foreach ($srcdirs as $dir) {
+      $dirs[] = $dir->nodeValue;
+    }
+    if ($this->allSrcdirsAreFolders($dirs)) {
+      $this->reverseFileIdx = $dirs;
+      return;
+    }
+    $this->srcdirsAreFolders = false;
+
+    foreach ($dirs as $dir) {
+      $key = basename($dir);
+      if (!isset($this->reverseFileIdx[$key])) {
+        $this->reverseFileIdx[$key] = array();
+      }
+      $this->reverseFileIdx[$key][] = $dir;
+    }
+  }
+
+  private function getFile($filename) {
+    if ($this->srcdirsAreFolders) {
+      foreach ($this->reverseFileIdx as $prefix) {
+        $file = $prefix.'/'.$filename;
+        if (file_exists($file)) {
+          return $file;
+        }
+      }
+      return null;
+    }
+
+    $files = $this->reverseFileIdx[basename($filename)];
+    foreach ($files as $candidate) {
+      $ends_with = substr_compare($candidate, $filename, -strlen($filename));
+      if ($ends_with === 0) {
+        return $candidate;
+      }
     }
   }
 }
