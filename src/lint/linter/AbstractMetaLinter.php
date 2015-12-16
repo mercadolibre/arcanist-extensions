@@ -4,13 +4,13 @@ abstract class AbstractMetaLinter extends ArcanistSingleRunLinter {
   protected $_linters;
   private $_availableLints;
 
-  public function __construct($baseProviderClass) {
-    if (empty($baseProviderClass)) {
+  public function __construct($base_provider_class) {
+    if (empty($base_provider_class)) {
       throw new Exception(
         'Must provide a base provider class for meta linter.');
     }
 
-    $rc = new ReflectionClass($baseProviderClass);
+    $rc = new ReflectionClass($base_provider_class);
     if (!$rc->isSubclassOf('LintProvider')) {
       throw new Exception(
         'Base provider class must extend LintProvider.');
@@ -20,7 +20,7 @@ abstract class AbstractMetaLinter extends ArcanistSingleRunLinter {
     $symbols = id(new PhutilSymbolLoader())
       ->setType('class')
       ->setConcreteOnly(true)
-      ->setAncestorClass($baseProviderClass)
+      ->setAncestorClass($base_provider_class)
       ->selectAndLoadSymbols();
 
     $this->_availableLints = array();
@@ -36,17 +36,17 @@ abstract class AbstractMetaLinter extends ArcanistSingleRunLinter {
   public function getLinterConfigurationOptions() {
     $options = array();
 
-    $availableLintNames = array();
+    $available_lint_names = array();
     foreach ($this->_availableLints as $lint) {
-      $availableLintNames[] = '"'.$lint->getName().'"';
+      $available_lint_names[] = '"'.$lint->getName().'"';
     }
 
     $options['lints'] = array(
       'type' => 'list<string>',
       'help' => 'The list of lint pugins to be run by '
         .$this->getLinterName()
-        .' Currently supported values are: '
-        .implode(', ', $availableLintNames),
+        .'. Currently supported values are: '
+        .implode(', ', $available_lint_names).'.',
     );
 
     return $options;
