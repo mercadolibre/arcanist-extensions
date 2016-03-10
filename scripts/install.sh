@@ -4,12 +4,11 @@ set -e -o pipefail -o nounset;
 
 OPTS="h";
 
-DEFAULT_INSTALL_PATH="/opt";
+DEFAULT_INSTALL_PATH="/usr/local/opt";
 DEFAULT_TARGET_NAME="arc-lint";
 DEFAULT_REPO_HOST="git@monits.com";
 DEFAULT_REPO_PATH="monits/arc-lint";
 
-COPY="Monits 2014";
 HELP=$(cat << _EOF
 Usage: $0 [OPTIONS] [ARGUMENTS]
 
@@ -24,8 +23,6 @@ _EOF
 );
 
 function print_help() {
-    echo
-    echo "Copyright $COPY"
     echo
     echo "$HELP"
     echo
@@ -110,13 +107,20 @@ function install_posix() {
     sudo mkdir -p "$REPO_TARGET_PATH"
     sudo chown -R "$USER" "$REPO_TARGET_PATH"
 
+    sudo mkdir -p "$SCRIPT_PATH"
+
     clone_repo;
     checkout "$1";
 
     sudo ln -fs "$REPO_TARGET_PATH/src" "$TARGET_PATH";
-    sudo ln -fs "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH";
-    sudo chmod uga+x "$SCRIPT_PATH";
+    sudo ln -fs "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH/arclintstaller";
+    sudo chmod uga+x "$SCRIPT_PATH/arclintstaller";
     sudo chown -R "$USER" "$TARGET_PATH";
+
+    if [[ ! "$PATH" =~ ^(.*:)?"$SCRIPT_PATH"(:.*)?$ ]]; then
+        echo "You should add $SCRIPT_PATH to your PATH in your .bashrc:"
+        echo "echo \"export PATH=\\\"\\\$PATH:$SCRIPT_PATH\\\"\" >> ~/.bashrc"
+    fi
 
     echo "Done."
 }
@@ -132,7 +136,7 @@ function update_posix() {
 function remove_posix() {
     sudo rm -rf "$TARGET_PATH";
     sudo rm -rf "$REPO_TARGET_PATH";
-    sudo rm -f "$SCRIPT_PATH";
+    sudo rm -f "$SCRIPT_PATH/arclintstaller";
 }
 
 function main() {
@@ -147,7 +151,7 @@ function main() {
     DEFAULT_TARGET_PATH="$INSTALL_PATH/$TARGET_NAME";
     TARGET_PATH=${TARGET_PATH:-$DEFAULT_TARGET_PATH};
     REPO_TARGET_PATH="$(dirname "$TARGET_PATH")/.$(basename "$TARGET_PATH")";
-    SCRIPT_PATH="/usr/bin/arclintstaller"
+    SCRIPT_PATH="/usr/local/bin/"
 
     case "$CMD" in
         "install")
