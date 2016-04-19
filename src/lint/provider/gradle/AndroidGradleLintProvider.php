@@ -21,6 +21,6 @@ class AndroidGradleLintProvider implements GradleLintProvider {
   public function parseLinterOutput(array $paths) {
     $parser = new AndroidParser();
     return $parser->parseAll(
-      '/build\/outputs\/lint-results\.xml$/i', $paths);
+      '/build\/outputs\/lint-results.*(?<!fatal)\.xml$/i', $paths);
   }
 }
