@@ -31,7 +31,7 @@ class CodenarcParser extends AbstractFileParser {
     foreach ($files as $file) {
       $path = $file->parentNode->getAttribute('path');
       $violations = $file->getElementsByTagName('Violation');
-      $source_path = $file->getAttribute('name');
+      $source_path = DIRECTORY_SEPARATOR.$file->getAttribute('name');
       $file_regex = '/^.+'.preg_quote($source_path, '/').'$/';
       $regex = new RegexIterator($iterator, $file_regex, RecursiveRegexIterator::GET_MATCH);
       foreach ($regex as $match) {
@@ -61,7 +61,7 @@ class CodenarcParser extends AbstractFileParser {
         $message->setCode($code);
         $message->setDescription($description);
         $message->setSeverity($this->getLintMessageSeverity($prefix));
-        $message->setLine(intval($sourceline));
+        $message->setLine((int)$sourceline);
         $message->setName($name);
 
         $messages[] = $message;
