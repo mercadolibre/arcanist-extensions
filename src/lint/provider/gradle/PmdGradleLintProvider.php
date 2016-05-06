@@ -13,6 +13,6 @@ class PmdGradleLintProvider extends DefaultLintProvider implements GradleLintPro
   public function parseLinterOutput(array $paths) {
     $parser = new PmdParser();
     return $parser->parseAll(
-      '/build\/reports\/pmd\/pmd\.xml$/i', $paths);
+      '/build\/reports\/pmd\/pmd.*\.xml$/i', $paths);
   }
 }

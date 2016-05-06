@@ -13,6 +13,6 @@ class CheckstyleGradleLintProvider extends DefaultLintProvider implements Gradle
   public function parseLinterOutput(array $paths) {
     $parser = new CheckstyleParser();
     return $parser->parseAll(
-      '/build\/reports\/checkstyle\/checkstyle\.xml$/i', $paths);
+      '/build\/reports\/checkstyle\/checkstyle.*\.xml$/i', $paths);
   }
 }
