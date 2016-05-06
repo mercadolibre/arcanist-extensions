@@ -35,6 +35,7 @@ class GradleLinter extends AbstractMetaLinter {
   public function getMandatoryFlags() {
     $flags = parent::getMandatoryFlags();
     $flags[] = '--daemon';
+    $flags[] = '--continue'; // in case any lint task is configured to fail on error
 
     return array_unique($flags); // just in case a provider set it (shouldn't)
   }

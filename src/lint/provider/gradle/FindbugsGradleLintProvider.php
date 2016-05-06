@@ -13,6 +13,6 @@ class FindbugsGradleLintProvider extends DefaultLintProvider implements GradleLi
   public function parseLinterOutput(array $paths) {
     $parser = new FindbugsParser();
     return $parser->parseAll(
-      '/build\/reports\/findbugs\/findbugs\.xml$/i', $paths);
+      '/build\/reports\/findbugs\/findbugs.*\.xml$/i', $paths);
   }
 }
