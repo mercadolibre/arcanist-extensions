@@ -8,7 +8,9 @@ final class GradleUnitTestEngine extends AbstractXUnitTestEngine {
 
     protected function findTestXmlFiles() {
         $base = getcwd();
-        $directory = new RecursiveDirectoryIterator($base);
+        $directory = new RecursiveDirectoryIterator($base,
+            FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO
+            | FilesystemIterator::SKIP_DOTS);
         $iterator = new RecursiveIteratorIterator($directory);
         $regex = new RegexIterator($iterator,
             '/^.+build\/test-results\/.*\/TEST.*\.xml$/i',
