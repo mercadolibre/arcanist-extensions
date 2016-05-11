@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x
 set -e -o pipefail -o nounset;
 
 OPTS="h";
@@ -110,7 +109,7 @@ function install_posix() {
     sudo mkdir -p "$REPO_TARGET_PATH"
     sudo chown -R "$USER" "$REPO_TARGET_PATH"
 
-    sudo mkdir -p "$SCRIPT_PATH"
+    sudo mkdir -p "$BIN_PATH"
 
     clone_repo;
     checkout "$1";
@@ -123,9 +122,9 @@ function install_posix() {
 
     sudo chown -R "$USER" "$TARGET_PATH";
 
-    if [[ ! "$PATH" =~ ^(.*:)?"$SCRIPT_PATH"(:.*)?$ ]]; then
-        echo "You should add $SCRIPT_PATH to your PATH in your .bashrc:"
-        echo "echo \"export PATH=\\\"\\\$PATH:$SCRIPT_PATH\\\"\" >> ~/.bashrc"
+    if [[ ! "$PATH" =~ ^(.*:)?"$BIN_PATH"(:.*)?$ ]]; then
+        echo "You should add $BIN_PATH to your PATH in your .bashrc:"
+        echo "echo \"export PATH=\\\"\\\$PATH:$BIN_PATH\\\"\" >> ~/.bashrc"
     fi
 
     echo "Done."
@@ -142,7 +141,8 @@ function update_posix() {
 function remove_posix() {
     sudo rm -rf "$TARGET_PATH";
     sudo rm -rf "$REPO_TARGET_PATH";
-    sudo rm -f "$SCRIPT_PATH/arclintstaller";
+    sudo rm -f "$SCRIPT_PATH";
+    sudo rm -f "$SCRIPT_PATH_ALT";
 }
 
 function main() {
