@@ -19,6 +19,9 @@ phutil_register_library_map(array(
     'CheckstyleGradleLintProvider' => 'lint/provider/gradle/CheckstyleGradleLintProvider.php',
     'CheckstyleMavenLintProvider' => 'lint/provider/maven/CheckstyleMavenLintProvider.php',
     'CheckstyleParser' => 'lint/parser/CheckstyleParser.php',
+    'CodenarcGradleLintProvider' => 'lint/provider/gradle/CodenarcGradleLintProvider.php',
+    'CodenarcMavenLintProvider' => 'lint/provider/maven/CodenarcMavenLintProvider.php',
+    'CodenarcParser' => 'lint/parser/CodenarcParser.php',
     'ConfigPathLinter' => 'lint/linter/ConfigPathLinter.php',
     'CpdGradleLintProvider' => 'lint/provider/gradle/CpdGradleLintProvider.php',
     'CpdMavenLintProvider' => 'lint/provider/maven/CpdMavenLintProvider.php',
@@ -63,6 +66,15 @@ phutil_register_library_map(array(
       'MavenLintProvider',
     ),
     'CheckstyleParser' => 'AbstractFileParser',
+    'CodenarcGradleLintProvider' => array(
+      'DefaultLintProvider',
+      'GradleLintProvider',
+    ),
+    'CodenarcMavenLintProvider' => array(
+      'DefaultLintProvider',
+      'MavenLintProvider',
+    ),
+    'CodenarcParser' => 'AbstractFileParser',
     'ConfigPathLinter' => 'ArcanistExternalLinter',
     'CpdGradleLintProvider' => array(
       'DefaultLintProvider',

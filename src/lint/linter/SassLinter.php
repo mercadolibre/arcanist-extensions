@@ -9,13 +9,15 @@ final class SassLinter extends ConfigPathLinter {
 
     public function getMandatoryFlags() {
         return array(
+            '--require',
+            'scss_lint_reporter_checkstyle',
             '-f',
-            'XML',
+            'Checkstyle',
         );
     }
 
     public function getInstallInstructions() {
-        return pht('run sudo gem installscss-lint.');
+        return pht('run sudo gem install scss-lint scss_lint_reporter_checkstyle');
     }
 
     public function getLinterName() {
@@ -31,65 +33,17 @@ final class SassLinter extends ConfigPathLinter {
     }
 
     protected function parseLinterOutput($path, $err, $stdout, $stderr) {
-        $messages = array();
-        $report_dom = new DOMDocument();
-
         if (!$stdout) {
             throw new ArcanistUsageException('The linter produced no output. '
                 .'This might be a bug, so I\'m showing you the stderr below:'
-                ."\n".$stderr);
+                ."\n".$stderr
+                ."\nRemember: this linter requires both `scss-lint` and "
+                .'`scss_lint_reporter_checkstyle` to run.');
         }
 
-        $ok = $report_dom->loadXML($stdout);
-        if (!$ok) {
-            throw new ArcanistUsageException('The linter produced no parseable '
-                .'output. This might be a bug, so I\'m showing you '
-                .'the stderr below:'
-                ."\n".$stderr);
-        }
-
-        $files = $report_dom->getElementsByTagName('file');
-        foreach ($files as $file) {
-            foreach ($file->childNodes as $child) {
-                if (!($child instanceof DOMElement)) {
-                    continue;
-                }
-
-                $severity = $child->getAttribute('severity');
-                if ($severity == 'error') {
-                    $prefix = 'E';
-                } else {
-                    $prefix = 'W';
-                }
-
-                $rule = $child->getAttribute('linter');
-                $words = preg_split('/(?<=[a-z])(?![a-z])/', $rule, -1, PREG_SPLIT_NO_EMPTY);
-                $name = implode(' ', $words);
-
-                $code = 'SASS.'.$prefix.'.'.$rule;
-
-                $message = new ArcanistLintMessage();
-                $message->setPath($path);
-                $message->setLine(intval($child->getAttribute('line')));
-                $message->setChar(intval($child->getAttribute('column')));
-                $message->setCode($code);
-                $message->setDescription($child->getAttribute('reason'));
-                $message->setSeverity($this->getLintMessageSeverity($code));
-                $message->setName($name);
-
-                $messages[] = $message;
-            }
-        }
-
-        return $messages;
+        $paths = array($path);
+        $parser = new CheckstyleParser();
+        $parser->setName('Sass', 'SASS');
+        return $parser->parseContent($stdout, $paths);
     }
-
-    protected function getDefaultMessageSeverity($code) {
-        if (preg_match('/^SASS\\.W\\./', $code)) {
-            return ArcanistLintSeverity::SEVERITY_WARNING;
-        } else {
-            return ArcanistLintSeverity::SEVERITY_ERROR;
-        }
-    }
-
 }

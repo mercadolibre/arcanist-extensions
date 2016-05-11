@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 set -e -o pipefail -o nounset;
 
 OPTS="h";
@@ -8,6 +9,8 @@ DEFAULT_INSTALL_PATH="/usr/local/opt";
 DEFAULT_TARGET_NAME="arc-lint";
 DEFAULT_REPO_HOST="git@monits.com";
 DEFAULT_REPO_PATH="monits/arc-lint";
+DEFAULT_PREFIX="/usr/local"
+BIN_PATH="${INSTALL_PREFIX:-$DEFAULT_PREFIX}/bin"
 
 HELP=$(cat << _EOF
 Usage: $0 [OPTIONS] [ARGUMENTS]
@@ -95,7 +98,7 @@ function checkout() {
     git fetch;
     git checkout "$tag" > /dev/null 2>&1;
     git pull origin "$tag" > /dev/null 2>&1;
-    cd -
+    cd - > /dev/null
 }
 
 function install_posix() {
@@ -113,8 +116,11 @@ function install_posix() {
     checkout "$1";
 
     sudo ln -fs "$REPO_TARGET_PATH/src" "$TARGET_PATH";
-    sudo ln -fs "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH/arclintstaller";
-    sudo chmod uga+x "$SCRIPT_PATH/arclintstaller";
+    sudo ln -fs "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH";
+    sudo chmod uga+x "$SCRIPT_PATH";
+    sudo ln -fs "$REPO_TARGET_PATH/scripts/install.sh" "$SCRIPT_PATH_ALT";
+    sudo chmod uga+x "$SCRIPT_PATH_ALT";
+
     sudo chown -R "$USER" "$TARGET_PATH";
 
     if [[ ! "$PATH" =~ ^(.*:)?"$SCRIPT_PATH"(:.*)?$ ]]; then
@@ -140,7 +146,7 @@ function remove_posix() {
 }
 
 function main() {
-    parse_options $@;
+    parse_options "$@";
     shift $((OPTIND - 1));
 
     CMD=${1:-"install"};
@@ -151,15 +157,16 @@ function main() {
     DEFAULT_TARGET_PATH="$INSTALL_PATH/$TARGET_NAME";
     TARGET_PATH=${TARGET_PATH:-$DEFAULT_TARGET_PATH};
     REPO_TARGET_PATH="$(dirname "$TARGET_PATH")/.$(basename "$TARGET_PATH")";
-    SCRIPT_PATH="/usr/local/bin/"
+    SCRIPT_PATH="$BIN_PATH/arclintstaller"
+    SCRIPT_PATH_ALT="$BIN_PATH/arc-extensions"
 
     case "$CMD" in
         "install")
-            install_posix $TAG;
+            install_posix "$TAG";
             ;;
 
         "update")
-            update_posix $TAG;
+            update_posix "$TAG";
             ;;
 
         "remove")
@@ -170,4 +177,4 @@ function main() {
     esac;
 }
 
-main $@;
+main "$@";
