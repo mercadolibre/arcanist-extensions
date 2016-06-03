@@ -82,7 +82,7 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
         $error_regexp = '/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+):'
-            .' (?<name>.*) (?<priority>P[0-9]) (?<desc>.*)/is';
+            .' (?<name>.*) \[(?<category>[^|]+)\|(?<priority>P[0-9])\] (?<desc>.*)/is';
         $messages = array();
 
         if ($stdout === '') {
@@ -100,8 +100,8 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
 
                 $message = new ArcanistLintMessage();
                 $message->setPath($matches['file']);
-                $message->setLine(intval($matches['line']));
-                $message->setChar(intval($matches['col']));
+                $message->setLine((int)$matches['line']);
+                $message->setChar((int)$matches['col']);
                 $message->setCode($code);
                 $message->setName($name);
                 $message->setDescription($matches['desc']);
