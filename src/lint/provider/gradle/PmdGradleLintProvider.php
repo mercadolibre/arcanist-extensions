@@ -15,4 +15,8 @@ class PmdGradleLintProvider extends DefaultLintProvider implements GradleLintPro
     return $parser->parseAll(
       '/build\/reports\/pmd\/pmd.*\.xml$/i', $paths);
   }
+
+  public function isLintDetectedMessage($error_message) {
+    return strpos($error_message, 'PMD rule violations were found.') !== false;
+  }
 }

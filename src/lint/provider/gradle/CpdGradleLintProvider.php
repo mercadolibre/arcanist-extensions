@@ -15,4 +15,8 @@ class CpdGradleLintProvider extends DefaultLintProvider implements GradleLintPro
     return $parser->parseAll(
       '/build\/reports\/pmd\/cpd\.xml$/i', $paths);
   }
+
+  public function isLintDetectedMessage($error_message) {
+    return strpos($error_message, 'CPD rule violations were found.') !== false;
+  }
 }

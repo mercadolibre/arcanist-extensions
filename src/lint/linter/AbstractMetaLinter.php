@@ -122,10 +122,23 @@ abstract class AbstractMetaLinter extends ArcanistSingleRunLinter {
     return false;
   }
 
+  /**
+   * Checks if the linter output indicates a compile error and reports shouldn't be parsed.
+   *
+   * @param status The status code with which the linter exited.
+   * @param stdout The linter's output to stdout.
+   * @param stderr The linter's output to stderr.
+   *
+   * @return bool True if it is a compilation error, false if it's not and reports should be parsed.
+  */
+  protected function isCompileError($status, $stdout, $stderr) {
+    return $status != 0;
+  }
+
   protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
     $messages = array();
 
-    if ($err) {
+    if ($this->isCompileError($err, $stdout, $stderr)) {
       $message = new ArcanistLintMessage();
       $message->setCode('COMPILE');
       $message->setDescription(

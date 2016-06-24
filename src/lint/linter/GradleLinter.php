@@ -39,4 +39,47 @@ class GradleLinter extends AbstractMetaLinter {
 
     return array_unique($flags); // just in case a provider set it (shouldn't)
   }
+
+  protected function isCompileError($status, $stdout, $stderr) {
+    if ($status === 0) {
+      return false;
+    }
+
+    // Since we are using --continue we have to check if all "failures" are down to linters finding errors
+    $regex = "/Execution failed for task '(?P<taskname>[^']+)[^>]*>(?P<error>[\s\S]*?(?=\* Try))/";
+    $matches = array();
+
+    if (preg_match_all($regex, $stderr, $matches, PREG_SET_ORDER)) {
+      foreach ($matches as $match) {
+        $is_error = true;
+
+        // Does any linter recognize the failing task as it's own?
+        foreach ($this->_linters as $linter) {
+          if ($this->isLinterTask($linter, $match['taskname'])) {
+            if ($linter->isLintDetectedMessage($match['error'])) {
+              $is_error = false;
+            }
+            break;
+          }
+        }
+
+        if ($is_error) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private function isLinterTask($linter, $task_name) {
+    foreach ($linter->getTargets() as $target) {
+      // It may not be an exact match, ie: :findbugsMain vs :findbugs
+      if (strpos($task_name, ":$target") !== false) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

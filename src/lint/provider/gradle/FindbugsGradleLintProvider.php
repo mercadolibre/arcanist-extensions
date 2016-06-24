@@ -15,4 +15,8 @@ class FindbugsGradleLintProvider extends DefaultLintProvider implements GradleLi
     return $parser->parseAll(
       '/build\/reports\/findbugs\/findbugs.*\.xml$/i', $paths);
   }
+
+  public function isLintDetectedMessage($error_message) {
+    return strpos($error_message, 'FindBugs rule violations were found.') !== false;
+  }
 }
