@@ -91,6 +91,8 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
             return $messages;
         }
 
+        $clang_severity = ArcanistLintSeverity::SEVERITY_ERROR;
+
         foreach (explode("\n", $stdout) as $line) {
             $matches = array();
             // The order for matching the regexps is important, since the compiler regexp
@@ -119,15 +121,26 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
                 $message->setPath($matches['file']);
                 $message->setLine((int)$matches['line']);
                 $message->setChar((int)$matches['col']);
-                $message->setCode('CLANG.ERROR');
-                $message->setName('Compiler error');
                 $message->setDescription($matches['desc']);
 
-                $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
+                $message->setSeverity($clang_severity);
 
+                if ($clang_severity == ArcanistLintSeverity::SEVERITY_ERROR) {
+                    $message->setCode('CLANG.ERROR');
+                    $message->setName('Compiler error');
+                } else {
+                    $message->setCode('CLANG.WARNING');
+                    $message->setName('Compiler warning');
+                }
 
                 $messages[] = $message;
+            } else if (strpos($line, 'Compiler Warnings:') !== false) {
+                $clang_severity = ArcanistLintSeverity::SEVERITY_WARNING;
+            } else if (strpos($line, 'Compiler Errors:') !== false) {
+                $clang_severity = ArcanistLintSeverity::SEVERITY_ERROR;
             }
+
+
         }
         return $messages;
     }
