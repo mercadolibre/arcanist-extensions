@@ -36,6 +36,8 @@ phutil_register_library_map(array(
     'GradleLinter' => 'lint/linter/GradleLinter.php',
     'GradleUnitTestEngine' => 'unit/engine/GradleUnitTestEngine.php',
     'IndentationLinter' => 'lint/linter/IndentationLinter.php',
+    'IndentationParser' => 'lint/parser/IndentationParser.php',
+    'JsonParser' => 'lint/parser/indentation/JsonParser.php',
     'LintProvider' => 'lint/provider/LintProvider.php',
     'MavenLintProvider' => 'lint/provider/maven/MavenLintProvider.php',
     'MavenLinter' => 'lint/linter/MavenLinter.php',
@@ -49,6 +51,7 @@ phutil_register_library_map(array(
     'ShellcheckLinter' => 'lint/linter/ShellcheckLinter.php',
     'XcodebuildConfiguration' => 'configuration/XcodebuildConfiguration.php',
     'XcodebuildUnitTestEngine' => 'unit/engine/XcodebuildUnitTestEngine.php',
+    'XmlParser' => 'lint/parser/indentation/XmlParser.php',
   ),
   'function' => array(),
   'xmap' => array(
@@ -102,6 +105,7 @@ phutil_register_library_map(array(
     'GradleLinter' => 'AbstractMetaLinter',
     'GradleUnitTestEngine' => 'AbstractXUnitTestEngine',
     'IndentationLinter' => 'ArcanistLinter',
+    'JsonParser' => 'IndentationParser',
     'MavenLintProvider' => 'LintProvider',
     'MavenLinter' => 'AbstractMetaLinter',
     'MavenUnitTestEngine' => 'AbstractXUnitTestEngine',
@@ -119,5 +123,6 @@ phutil_register_library_map(array(
     'SassLinter' => 'ConfigPathLinter',
     'ShellcheckLinter' => 'ArcanistSingleRunLinter',
     'XcodebuildUnitTestEngine' => 'AbstractXUnitTestEngine',
+    'XmlParser' => 'IndentationParser',
   ),
 ));
