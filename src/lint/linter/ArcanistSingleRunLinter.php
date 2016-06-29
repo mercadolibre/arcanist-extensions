@@ -97,7 +97,7 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
     protected function prepareToLintPaths(array $paths) {}
 
     final protected function buildCommand($paths) {
-        $this->checkBinaryVersion($this->getVersion());
+        $this->assertBinaryVersion();
         $binary = $this->getDefaultBinary();
         $args = implode(' ', array_merge(
             $this->getMandatoryFlags(), $this->getDefaultFlags()));
@@ -121,13 +121,15 @@ abstract class ArcanistSingleRunLinter extends ArcanistLinter {
      * of the configured binary to the required version, and if the binary's
      * version is not supported, throw an exception.
      *
-     * @param  string   Version string to check.
      * @return void
      */
-    final protected function checkBinaryVersion($version) {
+    final protected function assertBinaryVersion() {
         if (!$this->versionRequirement) {
             return;
         }
+
+        $version = $this->getVersion();
+
         if (!$version) {
             $message = pht(
                 'Linter %s requires %s version %s. Unable to determine the version '.

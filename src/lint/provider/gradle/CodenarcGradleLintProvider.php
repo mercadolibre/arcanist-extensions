@@ -15,4 +15,8 @@ class CodenarcGradleLintProvider extends DefaultLintProvider implements GradleLi
     return $parser->parseAll(
       '/build\/reports\/codenarc\/.*\.xml$/i', $paths);
   }
+
+  public function isLintDetectedMessage($error_message) {
+    return strpos($error_message, 'CodeNarc rule violations were found.') !== false;
+  }
 }

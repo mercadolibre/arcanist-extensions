@@ -68,7 +68,8 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
         $configuration = new XcodebuildConfiguration($configuration_manager);
 
         $build_flags = array('-dry-run', 'clean', 'build');
-        $result = exec_manual($configuration->buildCommand($build_flags)
+        $result = exec_manual('set -o pipefail && '
+            .$configuration->buildCommand($build_flags)
             .'| %s '
             .'--report json-compilation-database '
             .'--output compile_commands.json ',
@@ -81,8 +82,9 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
     }
 
     protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
+        $compiler_regexp = '/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+): (?<desc>.*)/is';
         $error_regexp = '/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+):'
-            .' (?<name>.*) (?<priority>P[0-9]) (?<desc>.*)/is';
+            .' (?<name>.*) \[(?<category>[^|]+)\|(?<priority>P[0-9])\](?<desc>.*)/is';
         $messages = array();
 
         if ($stdout === '') {
@@ -91,6 +93,8 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
 
         foreach (explode("\n", $stdout) as $line) {
             $matches = array();
+            // The order for matching the regexps is important, since the compiler regexp
+            // always matches against lint errors, but not the other way round.
             if ($c = preg_match($error_regexp, $line, $matches)) {
                 $name = $matches['name'];
                 $complete_code = 'OCLINT.'.strtoupper(str_replace(' ', '_', $name));
@@ -100,13 +104,26 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
 
                 $message = new ArcanistLintMessage();
                 $message->setPath($matches['file']);
-                $message->setLine(intval($matches['line']));
-                $message->setChar(intval($matches['col']));
+                $message->setLine((int)$matches['line']);
+                $message->setChar((int)$matches['col']);
                 $message->setCode($code);
                 $message->setName($name);
                 $message->setDescription($matches['desc']);
 
                 $message->setSeverity(ArcanistLintSeverity::SEVERITY_WARNING);
+
+
+                $messages[] = $message;
+            } else if ($c = preg_match($compiler_regexp, $line, $matches)) {
+                $message = new ArcanistLintMessage();
+                $message->setPath($matches['file']);
+                $message->setLine((int)$matches['line']);
+                $message->setChar((int)$matches['col']);
+                $message->setCode('CLANG.ERROR');
+                $message->setName('Compiler error');
+                $message->setDescription($matches['desc']);
+
+                $message->setSeverity(ArcanistLintSeverity::SEVERITY_ERROR);
 
 
                 $messages[] = $message;

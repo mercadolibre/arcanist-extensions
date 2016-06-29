@@ -15,4 +15,8 @@ class CheckstyleGradleLintProvider extends DefaultLintProvider implements Gradle
     return $parser->parseAll(
       '/build\/reports\/checkstyle\/checkstyle.*\.xml$/i', $paths);
   }
+
+  public function isLintDetectedMessage($error_message) {
+    return strpos($error_message, 'Checkstyle rule violations were found.') !== false;
+  }
 }

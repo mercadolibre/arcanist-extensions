@@ -85,6 +85,10 @@ class CLICPDLinter extends ArcanistSingleRunLinter {
     return array();
   }
 
+  public function getVersion() {
+      return '';
+  }
+
   protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
 
     // In this mode, CPD doesn't output anything when no matches were found
