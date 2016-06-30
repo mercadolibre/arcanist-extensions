@@ -50,6 +50,20 @@ final class XcodebuildUnitTestEngine extends AbstractXUnitTestEngine {
             $build_flags[] = '"'.$destination.'"';
         }
 
+        $build_path = $configuration_manager->getProjectConfig('xctest.build_path');
+        if (!$build_path) {
+            $build_path = 'build/test';
+        }
+
+        if (!is_dir($build_path)) {
+            mkdir($build_path, 0777, true);
+        }
+
+        // Resolve the full path to avoid xcodebuild farting
+        $path = realpath($build_path);
+        $build_flags[] = "OBJROOT='".$path."/obj'";
+        $build_flags[] = "SYMROOT='".$path."/sym'";
+
         // the pipefail makes xcpretty abort with the same status code as xcode
         return 'set -o pipefail && '
             .$configuration->buildCommand($build_flags)
