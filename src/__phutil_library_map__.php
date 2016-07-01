@@ -14,6 +14,7 @@ phutil_register_library_map(array(
     'AbstractXUnitTestEngine' => 'unit/engine/AbstractXUnitTestEngine.php',
     'AndroidGradleLintProvider' => 'lint/provider/gradle/AndroidGradleLintProvider.php',
     'AndroidParser' => 'lint/parser/AndroidParser.php',
+    'ArcanistCommandLinter' => 'lint/linter/ArcanistCommandLinter.php',
     'ArcanistSingleRunLinter' => 'lint/linter/ArcanistSingleRunLinter.php',
     'CLICPDLinter' => 'lint/linter/CLICPDLinter.php',
     'CheckstyleGradleLintProvider' => 'lint/provider/gradle/CheckstyleGradleLintProvider.php',
@@ -60,7 +61,8 @@ phutil_register_library_map(array(
     'AbstractXUnitTestEngine' => 'ArcanistUnitTestEngine',
     'AndroidGradleLintProvider' => 'GradleLintProvider',
     'AndroidParser' => 'AbstractFileParser',
-    'ArcanistSingleRunLinter' => 'ArcanistLinter',
+    'ArcanistCommandLinter' => 'ArcanistLinter',
+    'ArcanistSingleRunLinter' => 'ArcanistCommandLinter',
     'CLICPDLinter' => 'ArcanistSingleRunLinter',
     'CheckstyleGradleLintProvider' => array(
       'DefaultLintProvider',
