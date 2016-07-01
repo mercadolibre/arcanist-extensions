@@ -112,7 +112,7 @@ phutil_register_library_map(array(
     'MavenLintProvider' => 'LintProvider',
     'MavenLinter' => 'AbstractMetaLinter',
     'MavenUnitTestEngine' => 'AbstractXUnitTestEngine',
-    'OCLintLinter' => 'ArcanistSingleRunLinter',
+    'OCLintLinter' => 'ArcanistCommandLinter',
     'PmdGradleLintProvider' => array(
       'DefaultLintProvider',
       'GradleLintProvider',

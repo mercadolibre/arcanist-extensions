@@ -1,6 +1,8 @@
 <?php
 
-final class OCLintLinter extends ArcanistSingleRunLinter {
+final class OCLintLinter extends ArcanistCommandLinter {
+
+    private $didGenerateCompileCommands = false;
 
     public function getInfoDescription() {
         return 'This uses xcodebuild, xcpretty and oclint.'.PHP_EOL
@@ -10,14 +12,7 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
 
     protected function getDefaultBinary() {
         $config = $this->getEngine()->getConfigurationManager();
-        $oclint_bin = $config->getConfigFromAnySource('bin.oclint', 'oclint');
-
-        list($err, $stdout) = exec_manual('which %s', $oclint_bin);
-        if ($err) {
-            throw new ArcanistUsageException("can't find oclint");
-        }
-
-        return trim($stdout);
+        return $config->getConfigFromAnySource('bin.oclint', 'oclint');
     }
 
     private function getXCPrettyPath() {
@@ -60,10 +55,10 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
 
     protected function getDefaultFlags() {
         $config = $this->getEngine()->getConfigurationManager();
-        return $config->getConfigFromAnySource('lint.oclint.options', array());
+        return $config->getConfigFromAnySource('lint.oclint.options', array('-enable-clang-static-analyzer'));
     }
 
-    protected function prepareToLintPaths(array $paths) {
+    protected function prepareToLint() {
         $configuration_manager = $this->getEngine()->getConfigurationManager();
         $configuration = new XcodebuildConfiguration($configuration_manager);
 
@@ -81,7 +76,7 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
         }
     }
 
-    protected function parseLinterOutput($paths, $err, $stdout, $stderr) {
+    protected function parseLinterOutput($err, $stdout, $stderr) {
         $compiler_regexp = '/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+): (?<desc>.*)/is';
         $error_regexp = '/(?<file>[^:]+):(?P<line>\d+):(?P<col>\d+):'
             .' (?<name>.*) \[(?<category>[^|]+)\|(?<priority>P[0-9])\](?<desc>.*)/is';
@@ -92,6 +87,7 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
         }
 
         $clang_severity = ArcanistLintSeverity::SEVERITY_ERROR;
+        $clang_source = 'CLANG';
 
         foreach (explode("\n", $stdout) as $line) {
             $matches = array();
@@ -126,23 +122,67 @@ final class OCLintLinter extends ArcanistSingleRunLinter {
                 $message->setSeverity($clang_severity);
 
                 if ($clang_severity == ArcanistLintSeverity::SEVERITY_ERROR) {
-                    $message->setCode('CLANG.ERROR');
+                    $message->setCode($clang_source.'.ERROR');
                     $message->setName('Compiler error');
                 } else {
-                    $message->setCode('CLANG.WARNING');
+                    $message->setCode($clang_source.'.WARNING');
                     $message->setName('Compiler warning');
                 }
 
                 $messages[] = $message;
             } else if (strpos($line, 'Compiler Warnings:') !== false) {
                 $clang_severity = ArcanistLintSeverity::SEVERITY_WARNING;
+                $clang_source = 'CLANG';
             } else if (strpos($line, 'Compiler Errors:') !== false) {
                 $clang_severity = ArcanistLintSeverity::SEVERITY_ERROR;
+                $clang_source = 'CLANG';
+            } else if (strpos($line, 'Clang Static Analyzer Results:') !== false) {
+                $clang_severity = ArcanistLintSeverity::SEVERITY_WARNING;
+                $clang_source = 'ANALYZER';
             }
 
 
         }
         return $messages;
+    }
+
+    public function lintPath($path) {
+        $result = exec_manual($this->buildCommand(array($path)));
+        $messages = $this->parseLinterOutput($result[0], $result[1], $result[2]);
+
+        foreach ($messages as $message) {
+            $this->addLintMessage($message);
+        }
+
+        // OCLint generates a .plist with the results from the clang static
+        // analyzer. It's not useful at all, so we delete it.
+        $plist = basename($path, '.m').'.plist';
+        if (file_exists($plist)) {
+            unlink($plist);
+        }
+    }
+
+    public function willLintPaths(array $paths) {
+        parent::willLintPaths($paths);
+
+        // The engine will attempt to run the linter on chunks of paths,
+        // but we will ignore that and run for ALL paths, so we need to
+        // make sure to run just once.
+        if ($this->didGenerateCompileCommands) {
+            return;
+        }
+        $this->didGenerateCompileCommands = true;
+
+        list($err, $stdout) = exec_manual('which %s', $this->getDefaultBinary());
+        if ($err) {
+            throw new ArcanistUsageException("can't find oclint");
+        }
+
+        $working_copy = $this->getEngine()->getWorkingCopy();
+        $root = $working_copy->getProjectRoot();
+        chdir($root);
+
+        $this->prepareToLint();
     }
 
 }
