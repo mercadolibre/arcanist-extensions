@@ -62,7 +62,11 @@ final class OCLintLinter extends ArcanistCommandLinter {
         $configuration_manager = $this->getEngine()->getConfigurationManager();
         $configuration = new XcodebuildConfiguration($configuration_manager);
 
-        $build_flags = array('-dry-run', 'clean', 'build');
+        foreach ($this->getPaths() as $path) {
+            touch($path);
+        }
+
+        $build_flags = array('-dry-run', 'build');
         $result = exec_manual('set -o pipefail && '
             .$configuration->buildCommand($build_flags)
             .'| %s '
