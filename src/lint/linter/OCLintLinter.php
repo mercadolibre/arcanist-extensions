@@ -4,6 +4,8 @@ final class OCLintLinter extends ArcanistCommandLinter {
 
     private $didGenerateCompileCommands = false;
 
+    private $futures;
+
     public function getInfoDescription() {
         return 'This uses xcodebuild, xcpretty and oclint.'.PHP_EOL
             .'It assumes you use cocoapods for project organization. You can configure the following keys:'.PHP_EOL
@@ -150,20 +152,23 @@ final class OCLintLinter extends ArcanistCommandLinter {
         return $messages;
     }
 
-    public function lintPath($path) {
-        $result = exec_manual($this->buildCommand(array($path)));
+    protected function buildFuture($path) {
+        return new ExecFuture($this->buildCommand(array($path)));
+    }
+
+    protected function resolveFuture($path, Future $future) {
+        $result = $future->resolve();
         $messages = $this->parseLinterOutput($result[0], $result[1], $result[2]);
 
         foreach ($messages as $message) {
             $this->addLintMessage($message);
         }
+    }
 
-        // OCLint generates a .plist with the results from the clang static
-        // analyzer. It's not useful at all, so we delete it.
-        $plist = basename($path, '.m').'.plist';
-        if (file_exists($plist)) {
-            unlink($plist);
-        }
+    protected function getFuturesLimit() {
+        // This was decided by random sampling of available testing CPUs
+        // Sample set: Champo's macbook
+        return 8;
     }
 
     public function willLintPaths(array $paths) {
@@ -172,21 +177,57 @@ final class OCLintLinter extends ArcanistCommandLinter {
         // The engine will attempt to run the linter on chunks of paths,
         // but we will ignore that and run for ALL paths, so we need to
         // make sure to run just once.
-        if ($this->didGenerateCompileCommands) {
-            return;
+        if (!$this->didGenerateCompileCommands) {
+            $this->didGenerateCompileCommands = true;
+
+            list($err, $stdout) = exec_manual('which %s', $this->getDefaultBinary());
+            if ($err) {
+                throw new ArcanistUsageException("can't find oclint");
+            }
+
+            $working_copy = $this->getEngine()->getWorkingCopy();
+            $root = $working_copy->getProjectRoot();
+            chdir($root);
+
+            $this->prepareToLint();
         }
-        $this->didGenerateCompileCommands = true;
 
-        list($err, $stdout) = exec_manual('which %s', $this->getDefaultBinary());
-        if ($err) {
-            throw new ArcanistUsageException("can't find oclint");
+        $limit = $this->getFuturesLimit();
+        $this->futures = id(new FutureIterator(array()))->limit($limit);
+        foreach ($paths as $path) {
+            $this->futures->addFuture($this->buildFuture($path), $path);
         }
-
-        $working_copy = $this->getEngine()->getWorkingCopy();
-        $root = $working_copy->getProjectRoot();
-        chdir($root);
-
-        $this->prepareToLint();
     }
 
+    public function lintPath($path) {
+        return;
+    }
+
+    public function didLintPaths(array $paths) {
+        if (!$this->futures) {
+            return;
+        }
+
+        $map = array();
+        foreach ($this->futures as $path => $future) {
+            $this->setActivePath($path);
+            $this->resolveFuture($path, $future);
+            $map[$path] = $future;
+        }
+        $this->futures = array();
+
+        $this->didResolveLinterFutures($map);
+    }
+
+    protected function didResolveLinterFutures(array $futures) {
+
+        foreach ($futures as $path => $future) {
+            // OCLint generates a .plist with the results from the clang static
+            // analyzer. It's not useful at all, so we delete it.
+            $plist = basename($path, '.m').'.plist';
+            if (file_exists($plist)) {
+                unlink($plist);
+            }
+        }
+    }
 }
