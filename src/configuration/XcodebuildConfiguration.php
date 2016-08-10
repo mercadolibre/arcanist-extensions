@@ -66,6 +66,7 @@ final class XcodebuildConfiguration {
             .'-scheme %s '
             .'-configuration %s '
             .'-sdk %s '
+            .'-parallelizeTargets '
             .implode(' ', $flags),
             $this->xcodebuildBin,
             $this->workspace,
