@@ -70,7 +70,8 @@ abstract class AbstractFileParser {
       $files[] = $match->getPathname();
     }
     if (!count($files)) {
-      throw new Exception('Could not find any matching files.'
+      throw new Exception('Could not find any matching files '
+        ." for '$file_regex'."
         .' Check this project is correctly configured');
     }
     return $files;
