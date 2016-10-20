@@ -116,7 +116,7 @@ Runs a custom regular expression against file contents, searching for invalid st
 A generic indentation analyzer. Currently only supports json and xml files.
 
 
-# Available Unit engines
+# Available Unit Engines
 
 ## GradleUnitTestEngine
 
@@ -130,9 +130,4 @@ Runs maven with the `test` target, obtaining XUnit results from `target/surefire
 
 Runs unit tests as configured from XCode
 
-
-## Documentation on the Linters
-
-You can find more about each linter in the attached README.md files under
-`configs`.
 
