@@ -59,7 +59,7 @@ Sass files. It can also check some Compass extensions too!
 
 ## Maven & Gradle projects
 
-We support Maven and Ggradle projects performing a single run to generate a bunch of different reports. The extension efficiently performs the tasks needed just for the required lint providers.
+We support Maven and Gradle projects performing a single run to generate a bunch of different reports. The extension efficiently performs the tasks needed just for the required lint providers.
 
 Adding new providers to extend this feature set is easy.
 
