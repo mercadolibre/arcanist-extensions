@@ -23,6 +23,7 @@ final class XcodebuildConfiguration {
             .' - xcodebuild.scheme: The workspace scheme to build.'.PHP_EOL
             .' - xcodebuild.configuration: The .xcworkspace to build on. Default: \'Debug\''.PHP_EOL
             .' - xcodebuild.sdk: SDK to build against to. Default: \'iphonesimulator\''.PHP_EOL
+            .' - xcodebuild.other-flags: Other flags for xcodebuild'.PHP_EOL
             .' - bin.xcodebuild: Path to xcodebuild binary. Default \'xcodebuild\'.'.PHP_EOL;
     }
 
@@ -60,6 +61,10 @@ final class XcodebuildConfiguration {
     public function buildCommand(array $flags) {
         $this->loadConfig();
 
+        if ($this->otherFlags) {
+            array_push($flags, $this->otherFlags);
+        }
+        
         $command = new PhutilCommandString(array(
             '%s '
             .'-workspace %s '
