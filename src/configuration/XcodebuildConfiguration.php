@@ -14,6 +14,8 @@ final class XcodebuildConfiguration {
 
     private $configurationManager;
 
+    private $otherFlags;
+    
     public function __construct($configuration_manager) {
         $this->configurationManager = $configuration_manager;
     }
