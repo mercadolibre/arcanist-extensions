@@ -58,6 +58,7 @@ final class XcodebuildConfiguration {
         $this->configuration = $this->getConfigValue('xcodebuild.configuration', $this->configuration);
         $this->scheme = $this->getConfigValue('xcodebuild.scheme', $this->scheme);
         $this->xcodebuildBin = $this->getXcodebuildPath();
+        $this->otherFlags = $this->getConfigValue('xcodebuild.other-flags');
     }
 
     public function buildCommand(array $flags) {
