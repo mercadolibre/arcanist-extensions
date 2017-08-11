@@ -15,7 +15,7 @@ final class XcodebuildConfiguration {
     private $configurationManager;
 
     private $otherFlags;
-    
+
     public function __construct($configuration_manager) {
         $this->configurationManager = $configuration_manager;
     }
@@ -67,7 +67,7 @@ final class XcodebuildConfiguration {
         if ($this->otherFlags) {
             array_push($flags, $this->otherFlags);
         }
-        
+
         $command = new PhutilCommandString(array(
             '%s '
             .'-workspace %s '
