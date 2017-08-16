@@ -68,7 +68,7 @@ final class XcodebuildConfiguration {
             array_push($flags, $this->otherFlags);            
         } 
         
-        if (!$this->otherFlags || strpos($this->otherFlags,'-dry-run') === false) {
+        if (!$this->otherFlags || strpos($this->otherFlags, '-dry-run') === false) {
             array_unshift($flags, "clean");
         }
         
