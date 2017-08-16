@@ -58,14 +58,18 @@ final class XcodebuildConfiguration {
         $this->configuration = $this->getConfigValue('xcodebuild.configuration', $this->configuration);
         $this->scheme = $this->getConfigValue('xcodebuild.scheme', $this->scheme);
         $this->xcodebuildBin = $this->getXcodebuildPath();
-        $this->otherFlags = $this->getConfigValue('xcodebuild.other-flags');
+        $this->otherFlags = $this->configurationManager->getConfigFromAnySource('xcodebuild.other-flags');
     }
 
     public function buildCommand(array $flags) {
         $this->loadConfig();
 
         if ($this->otherFlags) {
-            array_push($flags, $this->otherFlags);
+            array_push($flags, $this->otherFlags);            
+        } 
+        
+        if (!$this->otherFlags || strpos($this->otherFlags,'-dry-run') === false) {
+            array_unshift($flags, "clean");
         }
         
         $command = new PhutilCommandString(array(
