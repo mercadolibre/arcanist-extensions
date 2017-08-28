@@ -14,6 +14,8 @@ final class XcodebuildConfiguration {
 
     private $configurationManager;
 
+    private $otherFlags;
+
     public function __construct($configuration_manager) {
         $this->configurationManager = $configuration_manager;
     }
@@ -23,6 +25,7 @@ final class XcodebuildConfiguration {
             .' - xcodebuild.scheme: The workspace scheme to build.'.PHP_EOL
             .' - xcodebuild.configuration: The .xcworkspace to build on. Default: \'Debug\''.PHP_EOL
             .' - xcodebuild.sdk: SDK to build against to. Default: \'iphonesimulator\''.PHP_EOL
+            .' - xcodebuild.other-flags: Other flags for xcodebuild'.PHP_EOL
             .' - bin.xcodebuild: Path to xcodebuild binary. Default \'xcodebuild\'.'.PHP_EOL;
     }
 
@@ -55,10 +58,19 @@ final class XcodebuildConfiguration {
         $this->configuration = $this->getConfigValue('xcodebuild.configuration', $this->configuration);
         $this->scheme = $this->getConfigValue('xcodebuild.scheme', $this->scheme);
         $this->xcodebuildBin = $this->getXcodebuildPath();
+        $this->otherFlags = $this->configurationManager->getConfigFromAnySource('xcodebuild.other-flags');
     }
 
     public function buildCommand(array $flags) {
         $this->loadConfig();
+
+        if ($this->otherFlags) {
+            array_push($flags, $this->otherFlags);            
+        } 
+        
+        if (!$this->otherFlags || strpos($this->otherFlags, '-dry-run') === false) {
+            array_unshift($flags, "clean");
+        }
 
         $command = new PhutilCommandString(array(
             '%s '
