@@ -6,8 +6,8 @@ OPTS="h";
 
 DEFAULT_INSTALL_PATH="/usr/local/opt";
 DEFAULT_TARGET_NAME="arc-lint";
-DEFAULT_REPO_HOST="git@monits.com";
-DEFAULT_REPO_PATH="monits/arc-lint";
+DEFAULT_REPO_HOST="git@github.com";
+DEFAULT_REPO_PATH="mercadolibre/arcanist-extensions";
 DEFAULT_PREFIX="/usr/local"
 BIN_PATH="${INSTALL_PREFIX:-$DEFAULT_PREFIX}/bin"
 

@@ -1,3 +1,4 @@
 .phutil_module_cache
 *~
 .*.sw[a-z]
+.DS_Store

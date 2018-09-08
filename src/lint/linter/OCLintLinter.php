@@ -68,7 +68,7 @@ final class OCLintLinter extends ArcanistCommandLinter {
             touch($path);
         }
 
-        $build_flags = array('-dry-run', 'build');
+        $build_flags = array('build');
         $result = exec_manual('set -o pipefail && '
             .$configuration->buildCommand($build_flags)
             .'| %s '
